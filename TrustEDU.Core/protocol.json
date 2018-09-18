@@ -1,0 +1,21 @@
+﻿{
+  "Protocol": {
+    "Magic": 0,
+    "AddressVersion": 1,
+    "SecondsPerBlock": 20,
+    "StandbyValidators": [
+
+    ],
+    "SeedList": [
+      "seed1.trustedu.network:283088",
+      "seed2.trustedu.network:283088",
+      "seed3.trustedu.network:283088"
+    ],
+    "SystemFee": {
+      "Enrollment": 0,
+      "Issue": 0,
+      "Publish": 0,
+      "Register": 0
+    } 
+  } 
+}

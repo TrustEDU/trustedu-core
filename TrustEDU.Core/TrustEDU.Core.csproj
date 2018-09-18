@@ -4,4 +4,16 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="IO\" />
+    <Folder Include="Core\" />
+    <Folder Include="Cryptography\" />
+    <Folder Include="Consensus\" />
+    <Folder Include="Network\RPC\" />
+    <Folder Include="VM\" />
+    <Folder Include="Plugins\" />
+    <Folder Include="Wallets\" />
+    <Folder Include="SmartContract\" />
+  </ItemGroup>
+
 </Project>
