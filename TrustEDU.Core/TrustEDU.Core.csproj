@@ -14,6 +14,22 @@
     <Folder Include="Plugins\" />
     <Folder Include="Wallets\" />
     <Folder Include="SmartContract\" />
+    <Folder Include="Base\Json\" />
+    <Folder Include="Base\Caching\" />
+    <Folder Include="IO\Persistence\" />
+    <Folder Include="IO\Persistence\LevelDB\Exceptions\" />
+    <Folder Include="Network\P2P\" />
+    <Folder Include="Network\P2P\Transactions\" />
+    <Folder Include="Network\P2P\Payload\" />
+    <Folder Include="Network\P2P\Interface\" />
+    <Folder Include="Network\P2P\Base\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="IO\Persistence\Iterator.cs" />
+  </ItemGroup>
 </Project>
