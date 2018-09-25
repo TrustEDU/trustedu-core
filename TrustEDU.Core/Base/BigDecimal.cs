@@ -47,7 +47,7 @@ namespace TrustEDU.Core.Base
         {
             try
             {
-                return new Fixed8((long)ChangeDecimals(8).value);
+                return new Fixed8((long)ChangeDecimals(8)._value);
             }
             catch (Exception ex)
             {

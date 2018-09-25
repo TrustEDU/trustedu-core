@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Globalization;
 using System.Text.Encodings.Web;
 
-
 namespace TrustEDU.Core.Base.Json
 {
     public class JString: JObject
@@ -45,11 +44,11 @@ namespace TrustEDU.Core.Base.Json
             }
         }
 
-        public override double AsNumber()
+        public override decimal AsNumber()
         {
             try
             {
-                return double.Parse(Value);
+                return decimal.Parse(Value);
             }
             catch
             {

@@ -2,14 +2,15 @@
 using System.IO;
 using System.Text;
 using System.Reflection;
+using TrustEDU.Core.Helpers;
 
 namespace TrustEDU.Core.Base.Json
 {
     public class JNumber: JObject
     {
-        public double Value { get; private set; }
+        public decimal Value { get; private set; }
 
-        public JNumber(double value = 0)
+        public JNumber(decimal value = 0)
         {
             this.Value = value;
         }
@@ -46,7 +47,7 @@ namespace TrustEDU.Core.Base.Json
             throw new InvalidCastException();
         }
 
-        public override double AsNumber()
+        public override decimal AsNumber()
         {
             return Value;
         }
@@ -60,14 +61,15 @@ namespace TrustEDU.Core.Base.Json
         {
             if (type == typeof(bool))
                 return true;
+            if (type == typeof(decimal))
+                return true;
             if (type == typeof(double))
                 return true;
             if (type == typeof(string))
                 return true;
+
             TypeInfo ti = type.GetTypeInfo();
-            if (ti.IsEnum && Enum.IsDefined(type, Convert.ChangeType(Value, ti.GetEnumUnderlyingType())))
-                return true;
-            return false;
+            return ti.IsEnum && Enum.IsDefined(type, Convert.ChangeType(Value, ti.GetEnumUnderlyingType()));
         }
 
         internal static JNumber Parse(TextReader reader)
@@ -87,7 +89,7 @@ namespace TrustEDU.Core.Base.Json
                     break;
                 }
             }
-            return new JNumber(double.Parse(sb.ToString()));
+            return new JNumber(decimal.Parse(sb.ToString()));
         }
 
         public override string ToString()

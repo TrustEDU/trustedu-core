@@ -32,9 +32,7 @@ namespace TrustEDU.Core.Base.Json
 
         public bool AsBooleanOrDefault(bool value = false)
         {
-            if (!CanConvertTo(typeof(bool)))
-                return value;
-            return AsBoolean();
+            return !CanConvertTo(typeof(bool)) ? value : AsBoolean();
         }
 
         public virtual T AsEnum<T>(bool ignoreCase = false)
@@ -44,21 +42,17 @@ namespace TrustEDU.Core.Base.Json
 
         public T AsEnumOrDefault<T>(T value = default(T), bool ignoreCase = false)
         {
-            if (!CanConvertTo(typeof(T)))
-                return value;
-            return AsEnum<T>(ignoreCase);
+            return !CanConvertTo(typeof(T)) ? value : AsEnum<T>(ignoreCase);
         }
 
-        public virtual double AsNumber()
+        public virtual decimal AsNumber()
         {
             throw new InvalidCastException();
         }
 
-        public double AsNumberOrDefault(double value = 0)
+        public decimal AsNumberOrDefault(decimal value = 0)
         {
-            if (!CanConvertTo(typeof(double)))
-                return value;
-            return AsNumber();
+            return !CanConvertTo(typeof(decimal)) ? value : AsNumber();
         }
 
         public virtual string AsString()
@@ -68,9 +62,7 @@ namespace TrustEDU.Core.Base.Json
 
         public string AsStringOrDefault(string value = null)
         {
-            if (!CanConvertTo(typeof(string)))
-                return value;
-            return AsString();
+            return !CanConvertTo(typeof(string)) ? value : AsString();
         }
 
         public virtual bool CanConvertTo(Type type)
@@ -83,9 +75,9 @@ namespace TrustEDU.Core.Base.Json
             return properties.ContainsKey(key);
         }
 
-        public static JObject Parse(TextReader reader, int max_nest = 100)
+        public static JObject Parse(TextReader reader, int maxNest = 100)
         {
-            if (max_nest < 0) throw new FormatException();
+            if (maxNest < 0) throw new FormatException();
             SkipSpace(reader);
             char firstChar = (char)reader.Peek();
             if (firstChar == '\"' || firstChar == '\'')
@@ -94,7 +86,7 @@ namespace TrustEDU.Core.Base.Json
             }
             if (firstChar == '[')
             {
-                return JArray.Parse(reader, max_nest);
+                return JArray.Parse(reader, maxNest);
             }
             if ((firstChar >= '0' && firstChar <= '9') || firstChar == '-')
             {
@@ -118,7 +110,7 @@ namespace TrustEDU.Core.Base.Json
                 string name = JString.Parse(reader).Value;
                 SkipSpace(reader);
                 if (reader.Read() != ':') throw new FormatException();
-                JObject value = Parse(reader, max_nest - 1);
+                JObject value = Parse(reader, maxNest - 1);
                 obj.properties.Add(name, value);
                 SkipSpace(reader);
             }
@@ -126,11 +118,11 @@ namespace TrustEDU.Core.Base.Json
             return obj;
         }
 
-        public static JObject Parse(string value, int max_nest = 100)
+        public static JObject Parse(string value, int maxNest = 100)
         {
             using (StringReader reader = new StringReader(value))
             {
-                return Parse(reader, max_nest);
+                return Parse(reader, maxNest);
             }
         }
 
@@ -204,7 +196,7 @@ namespace TrustEDU.Core.Base.Json
             return new JBoolean(value);
         }
 
-        public static implicit operator JObject(double value)
+        public static implicit operator JObject(decimal value)
         {
             return new JNumber(value);
         }

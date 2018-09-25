@@ -1,22 +1,22 @@
 ﻿using System;
 using System.IO;
 using System.Globalization;
-using TrustEDU.Core.IO;
+using TrustEDU.Core.Base.IO;
 
 namespace TrustEDU.Core.Base
 {
     public struct Fixed8 : IComparable<Fixed8>, IEquatable<Fixed8>, IFormattable, ISerializable
     {
-        private const long D = 100_000_000;
-        internal long value;
+        private const long BaseDecimal = 100_000_000;
+        internal long Value { get; set; }
 
-        public static readonly Fixed8 MaxValue = new Fixed8 { value = long.MaxValue };
+        public static readonly Fixed8 MaxValue = new Fixed8 { Value = long.MaxValue };
 
-        public static readonly Fixed8 MinValue = new Fixed8 { value = long.MinValue };
+        public static readonly Fixed8 MinValue = new Fixed8 { Value = long.MinValue };
 
-        public static readonly Fixed8 One = new Fixed8 { value = D };
+        public static readonly Fixed8 One = new Fixed8 { Value = BaseDecimal };
 
-        public static readonly Fixed8 Satoshi = new Fixed8 { value = 1 };
+        public static readonly Fixed8 Penny = new Fixed8 { Value = 1 };
 
         public static readonly Fixed8 Zero = default(Fixed8);
 
@@ -24,71 +24,66 @@ namespace TrustEDU.Core.Base
 
         public Fixed8(long data)
         {
-            this.value = data;
+            this.Value = data;
         }
 
         public Fixed8 Abs()
         {
-            if (value >= 0) return this;
-            return new Fixed8
-            {
-                value = -value
-            };
+            return Value >= 0 ? (this) : new Fixed8 { Value = -Value };
         }
 
         public Fixed8 Ceiling()
         {
-            long remainder = value % D;
+            long remainder = Value % BaseDecimal;
             if (remainder == 0) return this;
             if (remainder > 0)
                 return new Fixed8
                 {
-                    value = value - remainder + D
+                    Value = Value - remainder + BaseDecimal
                 };
             else
                 return new Fixed8
                 {
-                    value = value - remainder
+                    Value = Value - remainder
                 };
         }
 
         public int CompareTo(Fixed8 other)
         {
-            return value.CompareTo(other.value);
+            return Value.CompareTo(other.Value);
         }
 
         void ISerializable.Deserialize(BinaryReader reader)
         {
-            value = reader.ReadInt64();
+            Value = reader.ReadInt64();
         }
 
         public bool Equals(Fixed8 other)
         {
-            return value.Equals(other.value);
+            return Value.Equals(other.Value);
         }
 
         public override bool Equals(object obj)
         {
-            if (!(obj is Fixed8)) return false;
-            return Equals((Fixed8)obj);
+            return (obj is Fixed8) && Equals((Fixed8)obj);
         }
 
         public static Fixed8 FromDecimal(decimal value)
         {
-            value *= D;
+            value *= BaseDecimal;
             if (value < long.MinValue || value > long.MaxValue)
                 throw new OverflowException();
             return new Fixed8
             {
-                value = (long)value
+                Value = (long)value
             };
         }
 
-        public long GetData() => value;
+        public long GetData() => Value;
 
         public override int GetHashCode()
         {
-            return value.GetHashCode();
+            return Value.GetHashCode();
         }
 
         public static Fixed8 Max(Fixed8 first, params Fixed8[] others)
@@ -118,7 +113,7 @@ namespace TrustEDU.Core.Base
 
         void ISerializable.Serialize(BinaryWriter writer)
         {
-            writer.Write(value);
+            writer.Write(Value);
         }
 
         public override string ToString()
@@ -138,13 +133,12 @@ namespace TrustEDU.Core.Base
 
         public static bool TryParse(string s, out Fixed8 result)
         {
-            decimal d;
-            if (!decimal.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out d))
+            if (!decimal.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out decimal d))
             {
                 result = default(Fixed8);
                 return false;
             }
-            d *= D;
+            d *= BaseDecimal;
             if (d < long.MinValue || d > long.MaxValue)
             {
                 result = default(Fixed8);
@@ -152,19 +146,19 @@ namespace TrustEDU.Core.Base
             }
             result = new Fixed8
             {
-                value = (long)d
+                Value = (long)d
             };
             return true;
         }
 
         public static explicit operator decimal(Fixed8 value)
         {
-            return value.value / (decimal)D;
+            return value.Value / (decimal)BaseDecimal;
         }
 
         public static explicit operator long(Fixed8 value)
         {
-            return value.value / D;
+            return value.Value / BaseDecimal;
         }
 
         public static bool operator ==(Fixed8 x, Fixed8 y)
@@ -199,11 +193,11 @@ namespace TrustEDU.Core.Base
 
         public static Fixed8 operator *(Fixed8 x, Fixed8 y)
         {
-            const ulong QUO = (1ul << 63) / (D >> 1);
-            const ulong REM = ((1ul << 63) % (D >> 1)) << 1;
-            int sign = Math.Sign(x.value) * Math.Sign(y.value);
-            ulong ux = (ulong)Math.Abs(x.value);
-            ulong uy = (ulong)Math.Abs(y.value);
+            const ulong QUO = (1ul << 63) / (BaseDecimal >> 1);
+            const ulong REM = ((1ul << 63) % (BaseDecimal >> 1)) << 1;
+            int sign = Math.Sign(x.Value) * Math.Sign(y.Value);
+            ulong ux = (ulong)Math.Abs(x.Value);
+            ulong uy = (ulong)Math.Abs(y.Value);
             ulong xh = ux >> 32;
             ulong xl = ux & 0x00000000fffffffful;
             ulong yh = uy >> 32;
@@ -217,43 +211,43 @@ namespace TrustEDU.Core.Base
             rl += rml;
             if (rl < rml)
                 ++rh;
-            if (rh >= D)
+            if (rh >= BaseDecimal)
                 throw new OverflowException();
             ulong rd = rh * REM + rl;
             if (rd < rl)
                 ++rh;
-            ulong r = rh * QUO + rd / D;
-            x.value = (long)r * sign;
+            ulong r = rh * QUO + rd / BaseDecimal;
+            x.Value = (long)r * sign;
             return x;
         }
 
         public static Fixed8 operator *(Fixed8 x, long y)
         {
-            x.value = checked(x.value * y);
+            x.Value = checked(x.Value * y);
             return x;
         }
 
         public static Fixed8 operator /(Fixed8 x, long y)
         {
-            x.value /= y;
+            x.Value /= y;
             return x;
         }
 
         public static Fixed8 operator +(Fixed8 x, Fixed8 y)
         {
-            x.value = checked(x.value + y.value);
+            x.Value = checked(x.Value + y.Value);
             return x;
         }
 
         public static Fixed8 operator -(Fixed8 x, Fixed8 y)
         {
-            x.value = checked(x.value - y.value);
+            x.Value = checked(x.Value - y.Value);
             return x;
         }
 
         public static Fixed8 operator -(Fixed8 value)
         {
-            value.value = -value.value;
+            value.Value = -value.Value;
             return value;
         }
     }
