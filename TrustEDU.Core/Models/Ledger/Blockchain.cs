@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Akka.Actor;
 using TrustEDU.Core.Base;
+using TrustEDU.Core.Base.Caching;
 using TrustEDU.Core.Base.Helpers;
 using TrustEDU.Core.Cryptography.ECC;
+using TrustEDU.Core.IO.Persistence.LevelDB;
 using TrustEDU.Core.Models.Assets;
 using TrustEDU.Core.Models.Blocks;
 using TrustEDU.Core.Models.Coin;
@@ -107,7 +109,7 @@ namespace TrustEDU.Core.Models.Ledger
             }
         };
 
-        private readonly NeoSystem system;
+        private readonly TrustEDUNetwork system;
         private readonly List<UInt256> header_index = new List<UInt256>();
         private uint stored_header_count = 0;
         private readonly Dictionary<UInt256, Block> block_cache = new Dictionary<UInt256, Block>();
@@ -138,7 +140,7 @@ namespace TrustEDU.Core.Models.Ledger
             GenesisBlock.RebuildMerkleRoot();
         }
 
-        public Blockchain(NeoSystem system, Store store)
+        public Blockchain(TrustEDUNetwork system, Store store)
         {
             this.system = system;
             this.Store = store;
@@ -484,7 +486,6 @@ namespace TrustEDU.Core.Models.Ledger
                     List<ApplicationExecutionResult> execution_results = new List<ApplicationExecutionResult>();
                     switch (tx)
                     {
-#pragma warning disable CS0612
                         case RegisterTransaction tx_register:
                             snapshot.Assets.Add(tx.Hash, new AssetState
                             {
@@ -503,7 +504,6 @@ namespace TrustEDU.Core.Models.Ledger
                                 IsFrozen = false
                             });
                             break;
-#pragma warning restore CS0612
                         case IssueTransaction _:
                             foreach (TransactionResult result in tx.GetTransactionResults().Where(p => p.Amount < Fixed8.Zero))
                                 snapshot.Assets.GetAndChange(result.AssetId).Available -= result.Amount;
@@ -515,11 +515,10 @@ namespace TrustEDU.Core.Models.Ledger
                                     snapshot.SpentCoins.GetAndChange(input.PrevHash);
                             }
                             break;
-#pragma warning disable CS0612
                         case EnrollmentTransaction tx_enrollment:
                             snapshot.Validators.GetAndChange(tx_enrollment.PublicKey, () => new ValidatorState(tx_enrollment.PublicKey)).Registered = true;
                             break;
-#pragma warning restore CS0612
+
                         case StateTransaction tx_state:
                             foreach (StateDescriptor descriptor in tx_state.Descriptors)
                                 switch (descriptor.Type)
@@ -532,7 +531,7 @@ namespace TrustEDU.Core.Models.Ledger
                                         break;
                                 }
                             break;
-#pragma warning disable CS0612
+
                         case PublishTransaction tx_publish:
                             snapshot.Contracts.GetOrAdd(tx_publish.ScriptHash, () => new ContractState
                             {
@@ -547,7 +546,7 @@ namespace TrustEDU.Core.Models.Ledger
                                 Description = tx_publish.Description
                             });
                             break;
-#pragma warning restore CS0612
+
                         case InvocationTransaction tx_invocation:
                             using (ApplicationEngine engine = new ApplicationEngine(TriggerType.Application, tx_invocation, snapshot.Clone(), tx_invocation.Gas))
                             {
@@ -638,7 +637,7 @@ namespace TrustEDU.Core.Models.Ledger
             }
         }
 
-        public static Props Props(NeoSystem system, Store store)
+        public static Props Props(TrustEDUNetwork system, Store store)
         {
             return Akka.Actor.Props.Create(() => new Blockchain(system, store)).WithMailbox("blockchain-mailbox");
         }
