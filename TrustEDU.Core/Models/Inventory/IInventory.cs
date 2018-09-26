@@ -1,10 +1,15 @@
-﻿using System;
+﻿using TrustEDU.Core.Base.Types;
+using TrustEDU.Core.Models.Common;
+using TrustEDU.Core.Persistence;
+
 namespace TrustEDU.Core.Models.Inventory
 {
-    public class IInventory
+    public interface IInventory : IVerifiable
     {
-        public IInventory()
-        {
-        }
+        UInt256 Hash { get; }
+
+        InventoryType InventoryType { get; }
+
+        bool Verify(Snapshot snapshot);
     }
 }

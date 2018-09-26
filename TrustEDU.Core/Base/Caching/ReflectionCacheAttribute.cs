@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace TrustEDU.Core.Base.Caching
 {
     public class ReflectionCacheAttribute : Attribute

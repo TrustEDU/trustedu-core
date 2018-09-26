@@ -1,9 +1,8 @@
-﻿using TrustEDU.Core.Base;
-using TrustEDU.Core.Base.Json;
-using TrustEDU.Core.Helpers;
-using TrustEDU.Core.Base.IO;
+﻿using TrustEDU.Core.Base.Json;
 using System.IO;
 using TrustEDU.Core.Base.Helpers;
+using TrustEDU.Core.Models.Common;
+using TrustEDU.Core.Base.Types;
 
 namespace TrustEDU.Core.Models.Inventory
 {

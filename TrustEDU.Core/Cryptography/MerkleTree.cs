@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using TrustEDU.Core.Base;
+using TrustEDU.Core.Base.Types;
 
 namespace TrustEDU.Core.Cryptography
 {

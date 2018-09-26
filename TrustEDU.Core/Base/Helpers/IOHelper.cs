@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using TrustEDU.Core.Models.Common;
 
-namespace TrustEDU.Core.Helpers
+namespace TrustEDU.Core.Base.Helpers
 {
     public static class IOHelper
     {

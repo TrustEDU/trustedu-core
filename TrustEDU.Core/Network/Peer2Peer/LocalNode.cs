@@ -9,7 +9,7 @@ using System.Threading;
 using Akka.Actor;
 using TrustEDU.Core.Models.Common;
 using TrustEDU.Core.Models.Inventory;
-using Message = TrustEDU.Core.Models.Network.Message;
+using TrustEDU.Core.Models.Transactions;
 
 namespace TrustEDU.Core.Network.Peer2Peer
 {
@@ -174,7 +174,7 @@ namespace TrustEDU.Core.Network.Peer2Peer
             Connections.Tell(inventory);
         }
 
-        public static Props Props(NeoSystem system)
+        public static Props Props(TrustEDUNetwork system)
         {
             return Akka.Actor.Props.Create(() => new LocalNode(system));
         }

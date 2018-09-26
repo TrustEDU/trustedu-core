@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using TrustEDU.Core.Base;
+using System.Linq;
 using TrustEDU.Core.Base.Helpers;
 using TrustEDU.Core.Base.Json;
+using TrustEDU.Core.Base.Types;
 using TrustEDU.Core.Cryptography.ECC;
-using TrustEDU.Core.Helpers;
-using TrustEDU.Core.IO.Persistence.LevelDB;
 using TrustEDU.Core.Models.Assets;
 using TrustEDU.Core.Models.Ledger;
 using TrustEDU.Core.Models.SmartContract;
+using TrustEDU.Core.Persistence;
 
 namespace TrustEDU.Core.Models.Transactions
 {

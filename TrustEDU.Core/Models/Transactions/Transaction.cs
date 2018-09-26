@@ -1,11 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using TrustEDU.Core.Base;
+using System.Text;
 using TrustEDU.Core.Base.Caching;
+using TrustEDU.Core.Base.Helpers;
+using TrustEDU.Core.Base.Json;
+using TrustEDU.Core.Base.Types;
 using TrustEDU.Core.Cryptography;
-using TrustEDU.Core.Models.Coin;
+using TrustEDU.Core.Models.Assets;
+using TrustEDU.Core.Models.Coins;
+using TrustEDU.Core.Models.Common;
 using TrustEDU.Core.Models.Inventory;
+using TrustEDU.Core.Models.Ledger;
+using TrustEDU.Core.Persistence;
+using TrustEDU.VM.Runtime;
 
 namespace TrustEDU.Core.Models.Transactions
 {
@@ -87,7 +96,7 @@ namespace TrustEDU.Core.Models.Transactions
 
         public virtual int Size => sizeof(TransactionType) + sizeof(byte) + Attributes.GetVarSize() + Inputs.GetVarSize() + Outputs.GetVarSize() + Witnesses.GetVarSize();
 
-        public virtual Fixed8 SystemFee => Settings.Default.SystemFee.TryGetValue(Type, out Fixed8 fee) ? fee : Fixed8.Zero;
+        public virtual Fixed8 SystemFee => Configs.Default.SystemFee.TryGetValue(Type, out Fixed8 fee) ? fee : Fixed8.Zero;
 
         protected Transaction(TransactionType type)
         {

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using TrustEDU.Core.Base.IO;
-using TrustEDU.Core.Helpers;
+using TrustEDU.Core.Models.Common;
 
 namespace TrustEDU.Core.Base.Caching
 {

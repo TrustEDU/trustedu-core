@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using TrustEDU.Core.Base;
+using TrustEDU.Core.Base.Types;
 
-namespace TrustEDU.Core.Helpers
+namespace TrustEDU.Core.Base.Helpers
 {
     public static class CoreHelper
     {

@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
-using TrustEDU.Core.Base;
+using TrustEDU.Core.Base.Helpers;
 using TrustEDU.Core.Base.Json;
+using TrustEDU.Core.Base.Types;
 using TrustEDU.Core.Cryptography.ECC;
-using TrustEDU.Core.Helpers;
 
 namespace TrustEDU.Core.Models.SmartContract
 {

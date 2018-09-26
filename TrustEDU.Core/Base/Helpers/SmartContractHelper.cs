@@ -1,4 +1,9 @@
 ﻿using System;
+using TrustEDU.Core.Base.Types;
+using TrustEDU.Core.Cryptography;
+using TrustEDU.Core.Models.Common;
+using TrustEDU.Core.Models.SmartContract;
+using TrustEDU.Core.Persistence;
 using TrustEDU.VM.Runtime;
 
 namespace TrustEDU.Core.Base.Helpers

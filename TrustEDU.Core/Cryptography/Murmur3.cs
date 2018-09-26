@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using TrustEDU.Core.Helpers;
+using TrustEDU.Core.Base.Helpers;
 
 namespace TrustEDU.Core.Cryptography
 {

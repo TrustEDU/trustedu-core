@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Reflection;
-using TrustEDU.Core.Helpers;
+using TrustEDU.Core.Base.Helpers;
 
 namespace TrustEDU.Core.Base.Json
 {

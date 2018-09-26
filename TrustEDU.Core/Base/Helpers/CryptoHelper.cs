@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using TrustEDU.Core.Cryptography;
+using TrustEDU.Core.Models.Transactions;
 
 namespace TrustEDU.Core.Base.Helpers
 {

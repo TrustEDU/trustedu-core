@@ -1,5 +1,4 @@
-﻿using System;
-using TrustEDU.Core.Base.IO;
+﻿using TrustEDU.Core.Models.Common;
 
 namespace TrustEDU.Core.Base.Caching
 {

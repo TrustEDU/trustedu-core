@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
-using TrustEDU.Core.Base;
 using TrustEDU.Core.Base.Helpers;
+using TrustEDU.Core.Base.Types;
 using TrustEDU.VM.Runtime;
 using ECPoint = TrustEDU.Core.Cryptography.ECC.ECPoint;
-using TrustEDU.Core.Helpers;
 
 namespace TrustEDU.Core.Models.SmartContract
 {

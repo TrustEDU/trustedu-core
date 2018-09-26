@@ -1,5 +1,5 @@
-﻿using System;
-using TrustEDU.Core.Network.P2P.Interface;
+﻿using TrustEDU.Core.Base.Types;
+using TrustEDU.Core.Models.Inventory;
 
 namespace TrustEDU.Core.Base.Caching
 {

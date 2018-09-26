@@ -1,4 +1,4 @@
-﻿using TrustEDU.Core.Base;
+﻿using TrustEDU.Core.Base.Types;
 
 namespace TrustEDU.Core.Cryptography
 {

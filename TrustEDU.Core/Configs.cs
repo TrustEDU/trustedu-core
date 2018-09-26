@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using TrustEDU.Core.Models.Transactions;
-using TrustEDU.Core.Base;
+using TrustEDU.Core.Base.Types;
 
 namespace TrustEDU.Core
 {

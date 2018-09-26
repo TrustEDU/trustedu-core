@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Net;
 using Akka.Actor;
 using TrustEDU.Core.Models.Ledger;
+using TrustEDU.Core.Models.Wallets;
+using TrustEDU.Core.Persistence;
+using TrustEDU.Core.Plugins;
 
 namespace TrustEDU.Core
 {

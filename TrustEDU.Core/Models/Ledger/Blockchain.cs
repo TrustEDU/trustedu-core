@@ -1,18 +1,22 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
+using System.Threading;
 using Akka.Actor;
-using TrustEDU.Core.Base;
 using TrustEDU.Core.Base.Caching;
 using TrustEDU.Core.Base.Helpers;
+using TrustEDU.Core.Base.Types;
 using TrustEDU.Core.Cryptography.ECC;
-using TrustEDU.Core.IO.Persistence.LevelDB;
 using TrustEDU.Core.Models.Assets;
-using TrustEDU.Core.Models.Blocks;
-using TrustEDU.Core.Models.Coin;
+using TrustEDU.Core.Models.Coins;
 using TrustEDU.Core.Models.Inventory;
+using TrustEDU.Core.Models.Network;
 using TrustEDU.Core.Models.SmartContract;
 using TrustEDU.Core.Models.Transactions;
+using TrustEDU.Core.Network.Peer2Peer;
+using TrustEDU.Core.Persistence;
 using TrustEDU.VM.Runtime;
 
 namespace TrustEDU.Core.Models.Ledger
@@ -35,7 +39,7 @@ namespace TrustEDU.Core.Models.Ledger
         public static readonly RegisterTransaction GoverningToken = new RegisterTransaction
         {
             AssetType = AssetType.GoverningToken,
-            Name = "[{\"lang\":\"vi-VN\",\"name\":\"AntShare\"},{\"lang\":\"en\",\"name\":\"AntShare\"}]",
+            Name = "[{\"lang\":\"vi-VN\",\"name\":\"TrustCurrency\"},{\"lang\":\"en\",\"name\":\"TrustCurrency\"}]",
             Amount = Fixed8.FromDecimal(100000000),
             Precision = 0,
             Owner = ECCurve.Secp256r1.Infinity,
@@ -49,7 +53,7 @@ namespace TrustEDU.Core.Models.Ledger
         public static readonly RegisterTransaction UtilityToken = new RegisterTransaction
         {
             AssetType = AssetType.UtilityToken,
-            Name = "[{\"lang\":\"vi-VN\",\"name\":\"AntCoin\"},{\"lang\":\"en\",\"name\":\"AntCoin\"}]",
+            Name = "[{\"lang\":\"vi-VN\",\"name\":\"TrustCoin\"},{\"lang\":\"en\",\"name\":\"TrustCoin\"}]",
             Amount = Fixed8.FromDecimal(GenerationAmount.Sum(p => p) * DecrementInterval),
             Precision = 8,
             Owner = ECCurve.Secp256r1.Infinity,
@@ -159,7 +163,7 @@ namespace TrustEDU.Core.Models.Ledger
                     HashIndexState hashIndex = store.GetHeaderHashIndex().Get();
                     if (hashIndex.Index >= stored_header_count)
                     {
-                        DataCache<UInt256, BlockState> cache = store.GetBlocks();
+                        CacheItem<UInt256, BlockState> cache = store.GetBlocks();
                         for (UInt256 hash = hashIndex.Hash; hash != header_index[(int)stored_header_count - 1];)
                         {
                             header_index.Insert((int)stored_header_count, hash);

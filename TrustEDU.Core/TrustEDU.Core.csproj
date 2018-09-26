@@ -31,15 +31,18 @@
     <Folder Include="Models\Assets\" />
     <Folder Include="Models\Inventory\" />
     <Folder Include="Cryptography\ECC\" />
-    <Folder Include="Models\Blocks\" />
     <Folder Include="Models\Transactions\" />
     <Folder Include="Models\Common\" />
     <Folder Include="Models\Network\" />
-    <Folder Include="Models\Coin\" />
+    <Folder Include="Models\Coins\" />
     <Folder Include="Models\Ledger\" />
     <Folder Include="Models\SmartContract\" />
     <Folder Include="Models\Services\" />
     <Folder Include="Models\Actors\" />
+    <Folder Include="Base\Types\" />
+    <Folder Include="Models\Wallets\" />
+    <Folder Include="Models\LevelDB\" />
+    <Folder Include="Persistence\LevelDB\" />
   </ItemGroup>
 
   <ItemGroup>

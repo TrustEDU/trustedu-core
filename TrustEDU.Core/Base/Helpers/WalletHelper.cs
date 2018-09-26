@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using TrustEDU.Core.Base.Types;
+using TrustEDU.Core.Cryptography;
 using TrustEDU.Core.Models.Common;
 
 namespace TrustEDU.Core.Base.Helpers

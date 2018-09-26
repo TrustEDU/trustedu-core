@@ -1,9 +1,8 @@
 ﻿using System.IO;
 using System.Linq;
-using TrustEDU.Core.Base;
 using TrustEDU.Core.Base.Helpers;
 using TrustEDU.Core.Base.Json;
-using TrustEDU.Core.Helpers;
+using TrustEDU.Core.Base.Types;
 using TrustEDU.Core.Models.Common;
 
 namespace TrustEDU.Core.Models.SmartContract

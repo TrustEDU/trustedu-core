@@ -1,6 +1,7 @@
-﻿using System;
-using TrustEDU.Core.Base.IO;
-using TrustEDU.Core.Models.Base;
+﻿using System.IO;
+using TrustEDU.Core.Base.Helpers;
+using TrustEDU.Core.Base.Json;
+using TrustEDU.Core.Models.Common;
 
 namespace TrustEDU.Core.Models.Transactions
 {

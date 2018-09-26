@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TrustEDU.Core.Base;
-using TrustEDU.Core.Helpers;
-using TrustEDU.Core.Models.Coin;
+using TrustEDU.Core.Base.Helpers;
+using TrustEDU.Core.Base.Json;
+using TrustEDU.Core.Base.Types;
+using TrustEDU.Core.Models.Coins;
+using TrustEDU.Core.Models.Ledger;
+using TrustEDU.Core.Persistence;
 
 namespace TrustEDU.Core.Models.Transactions
 {

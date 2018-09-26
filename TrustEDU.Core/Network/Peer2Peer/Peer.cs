@@ -12,8 +12,8 @@ using Akka.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using TrustEDU.Core.Helpers;
 using System.Threading.Tasks;
+using TrustEDU.Core.Base.Helpers;
 
 namespace TrustEDU.Core.Network.Peer2Peer
 {

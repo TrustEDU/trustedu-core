@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using TrustEDU.Core.Helpers;
+using TrustEDU.Core.Base.Helpers;
 
 namespace TrustEDU.Core.Cryptography.ECC
 {

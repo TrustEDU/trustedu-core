@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
-using TrustEDU.Core.Base;
-using TrustEDU.Core.Helpers;
-using TrustEDU.Core.IO.Persistence.LevelDB;
-using TrustEDU.Core.Models.Blocks;
+using TrustEDU.Core.Base.Helpers;
+using TrustEDU.Core.Base.Types;
 using TrustEDU.Core.Models.Common;
+using TrustEDU.Core.Models.Ledger;
 using TrustEDU.Core.Models.SmartContract;
+using TrustEDU.Core.Models.Transactions;
+using TrustEDU.Core.Persistence;
 using TrustEDU.VM.Base;
 using TrustEDU.VM.Base.Types;
 using TrustEDU.VM.Runtime;
@@ -406,7 +408,7 @@ namespace TrustEDU.Core.Models.Services
 
         protected bool Header_GetIndex(ExecutionEngine engine)
         {
-            if (engine.CurrentContext.EvaluationStack.Pop() is InteropInterface _interface)
+            if (engine.CurrentContext.EvaluationStack.Pop() is InteropContract _interface)
             {
                 BlockBase header = _interface.GetInterface<BlockBase>();
                 if (header == null) return false;
@@ -418,7 +420,7 @@ namespace TrustEDU.Core.Models.Services
 
         protected bool Header_GetHash(ExecutionEngine engine)
         {
-            if (engine.CurrentContext.EvaluationStack.Pop() is InteropInterface _interface)
+            if (engine.CurrentContext.EvaluationStack.Pop() is InteropContract _interface)
             {
                 BlockBase header = _interface.GetInterface<BlockBase>();
                 if (header == null) return false;
@@ -430,7 +432,7 @@ namespace TrustEDU.Core.Models.Services
 
         protected bool Header_GetPrevHash(ExecutionEngine engine)
         {
-            if (engine.CurrentContext.EvaluationStack.Pop() is InteropInterface _interface)
+            if (engine.CurrentContext.EvaluationStack.Pop() is InteropContract _interface)
             {
                 BlockBase header = _interface.GetInterface<BlockBase>();
                 if (header == null) return false;
@@ -442,7 +444,7 @@ namespace TrustEDU.Core.Models.Services
 
         protected bool Header_GetTimestamp(ExecutionEngine engine)
         {
-            if (engine.CurrentContext.EvaluationStack.Pop() is InteropInterface _interface)
+            if (engine.CurrentContext.EvaluationStack.Pop() is InteropContract _interface)
             {
                 BlockBase header = _interface.GetInterface<BlockBase>();
                 if (header == null) return false;
@@ -454,7 +456,7 @@ namespace TrustEDU.Core.Models.Services
 
         protected bool Block_GetTransactionCount(ExecutionEngine engine)
         {
-            if (engine.CurrentContext.EvaluationStack.Pop() is InteropInterface _interface)
+            if (engine.CurrentContext.EvaluationStack.Pop() is InteropContract _interface)
             {
                 Block block = _interface.GetInterface<Block>();
                 if (block == null) return false;
@@ -466,7 +468,7 @@ namespace TrustEDU.Core.Models.Services
 
         protected bool Block_GetTransactions(ExecutionEngine engine)
         {
-            if (engine.CurrentContext.EvaluationStack.Pop() is InteropInterface _interface)
+            if (engine.CurrentContext.EvaluationStack.Pop() is InteropContract _interface)
             {
                 Block block = _interface.GetInterface<Block>();
                 if (block == null) return false;
@@ -480,7 +482,7 @@ namespace TrustEDU.Core.Models.Services
 
         protected bool Block_GetTransaction(ExecutionEngine engine)
         {
-            if (engine.CurrentContext.EvaluationStack.Pop() is InteropInterface _interface)
+            if (engine.CurrentContext.EvaluationStack.Pop() is InteropContract _interface)
             {
                 Block block = _interface.GetInterface<Block>();
                 int index = (int)engine.CurrentContext.EvaluationStack.Pop().GetBigInteger();
@@ -495,7 +497,7 @@ namespace TrustEDU.Core.Models.Services
 
         protected bool Transaction_GetHash(ExecutionEngine engine)
         {
-            if (engine.CurrentContext.EvaluationStack.Pop() is InteropInterface _interface)
+            if (engine.CurrentContext.EvaluationStack.Pop() is InteropContract _interface)
             {
                 Transaction tx = _interface.GetInterface<Transaction>();
                 if (tx == null) return false;
@@ -527,7 +529,7 @@ namespace TrustEDU.Core.Models.Services
 
         protected bool Storage_Get(ExecutionEngine engine)
         {
-            if (engine.CurrentContext.EvaluationStack.Pop() is InteropInterface _interface)
+            if (engine.CurrentContext.EvaluationStack.Pop() is InteropContract _interface)
             {
                 StorageContext context = _interface.GetInterface<StorageContext>();
                 if (!CheckStorageContext(context)) return false;
@@ -545,7 +547,7 @@ namespace TrustEDU.Core.Models.Services
 
         protected bool StorageContext_AsReadOnly(ExecutionEngine engine)
         {
-            if (engine.CurrentContext.EvaluationStack.Pop() is InteropInterface _interface)
+            if (engine.CurrentContext.EvaluationStack.Pop() is InteropContract _interface)
             {
                 StorageContext context = _interface.GetInterface<StorageContext>();
                 if (!context.IsReadOnly)
@@ -562,7 +564,7 @@ namespace TrustEDU.Core.Models.Services
 
         protected bool Contract_GetStorageContext(ExecutionEngine engine)
         {
-            if (engine.CurrentContext.EvaluationStack.Pop() is InteropInterface _interface)
+            if (engine.CurrentContext.EvaluationStack.Pop() is InteropContract _interface)
             {
                 ContractState contract = _interface.GetInterface<ContractState>();
                 if (!ContractsCreated.TryGetValue(contract.ScriptHash, out UInt160 created)) return false;
@@ -594,7 +596,7 @@ namespace TrustEDU.Core.Models.Services
         {
             if (Trigger != TriggerType.Application && Trigger != TriggerType.ApplicationR)
                 return false;
-            if (engine.CurrentContext.EvaluationStack.Pop() is InteropInterface _interface)
+            if (engine.CurrentContext.EvaluationStack.Pop() is InteropContract _interface)
             {
                 StorageContext context = _interface.GetInterface<StorageContext>();
                 if (context.IsReadOnly) return false;
@@ -616,7 +618,7 @@ namespace TrustEDU.Core.Models.Services
         {
             if (Trigger != TriggerType.Application && Trigger != TriggerType.ApplicationR)
                 return false;
-            if (engine.CurrentContext.EvaluationStack.Pop() is InteropInterface _interface)
+            if (engine.CurrentContext.EvaluationStack.Pop() is InteropContract _interface)
             {
                 StorageContext context = _interface.GetInterface<StorageContext>();
                 if (context.IsReadOnly) return false;
