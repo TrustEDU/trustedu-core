@@ -15,8 +15,10 @@ using TrustEDU.Core.Models.Inventory;
 using TrustEDU.Core.Models.Network;
 using TrustEDU.Core.Models.SmartContract;
 using TrustEDU.Core.Models.Transactions;
+using TrustEDU.Core.Models.Wallets;
 using TrustEDU.Core.Network.Peer2Peer;
 using TrustEDU.Core.Persistence;
+using TrustEDU.Core.Plugins;
 using TrustEDU.VM.Runtime;
 
 namespace TrustEDU.Core.Models.Ledger
@@ -673,28 +675,6 @@ namespace TrustEDU.Core.Models.Ledger
         private void UpdateCurrentSnapshot()
         {
             Interlocked.Exchange(ref currentSnapshot, GetSnapshot())?.Dispose();
-        }
-    }
-
-    internal class BlockchainMailbox : PriorityMailbox
-    {
-        public BlockchainMailbox(Akka.Actor.Settings settings, Config config)
-            : base(settings, config)
-        {
-        }
-
-        protected override bool IsHighPriority(object message)
-        {
-            switch (message)
-            {
-                case Header[] _:
-                case Block _:
-                case ConsensusPayload _:
-                case Terminated _:
-                    return true;
-                default:
-                    return false;
-            }
         }
     }
 }

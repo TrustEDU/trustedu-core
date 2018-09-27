@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.Serialization;
-using TrustEDU.Core.Base;
+using TrustEDU.Core.Base.Helpers;
 using TrustEDU.Core.Base.Json;
+using TrustEDU.Core.Base.Types;
+using TrustEDU.Core.Models.Common;
 using TrustEDU.VM.Base;
 
 namespace TrustEDU.Core.Models.Transactions

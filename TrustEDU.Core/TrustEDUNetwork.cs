@@ -3,6 +3,8 @@ using System.Net;
 using Akka.Actor;
 using TrustEDU.Core.Models.Ledger;
 using TrustEDU.Core.Models.Wallets;
+using TrustEDU.Core.Network.Peer2Peer;
+using TrustEDU.Core.Network.RPC;
 using TrustEDU.Core.Persistence;
 using TrustEDU.Core.Plugins;
 
@@ -25,9 +27,9 @@ namespace TrustEDU.Core
 
         public TrustEDUNetwork(Store store)
         {
-            this.Blockchain = ActorSystem.ActorOf(Ledger.Blockchain.Props(this, store));
-            this.LocalNode = ActorSystem.ActorOf(Network.P2P.LocalNode.Props(this));
-            this.TaskManager = ActorSystem.ActorOf(Network.P2P.TaskManager.Props(this));
+            this.Blockchain = ActorSystem.ActorOf(Logger.Blockchain.Props(this, store));
+            this.LocalNode = ActorSystem.ActorOf(LocalNode.Props(this));
+            this.TaskManager = ActorSystem.ActorOf(TaskManager.Props(this));
             Plugin.LoadPlugins(this);
         }
 

@@ -1,4 +1,4 @@
-﻿using TrustEDU.Core.Base;
+﻿using TrustEDU.Core.Base.Types;
 using TrustEDU.VM.Base;
 
 namespace TrustEDU.Core.Models.SmartContract

@@ -1,6 +1,19 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Text;
 using TrustEDU.Core.Base;
+using TrustEDU.Core.Base.Helpers;
+using TrustEDU.Core.Base.Types;
+using TrustEDU.Core.Models.Inventory;
+using TrustEDU.Core.Models.Ledger;
+using TrustEDU.Core.Models.Transactions;
+using TrustEDU.VM.Base;
+using TrustEDU.VM.Base.Types;
 using TrustEDU.VM.Runtime;
+using Snapshot = TrustEDU.Core.Persistence.Snapshot;
 
 namespace TrustEDU.Core.Models.SmartContract
 {
@@ -48,10 +61,10 @@ namespace TrustEDU.Core.Models.SmartContract
         private bool is_stackitem_count_strict = true;
 
         public Fixed8 GasConsumed => new Fixed8(gas_consumed);
-        public new NeoService Service => (NeoService)base.Service;
+        public new TrustEDUService Service => (TrustEDUService)base.Service;
 
         public ApplicationEngine(TriggerType trigger, IScriptContainer container, Snapshot snapshot, Fixed8 gas, bool testMode = false)
-            : base(container, Cryptography.Crypto.Default, snapshot, new NeoService(trigger, snapshot))
+            : base(container, Cryptography.Crypto.Default, snapshot, new TrustEDUService(trigger, snapshot))
         {
             this.gas_amount = gas_free + gas.GetData();
             this.testMode = testMode;
@@ -84,7 +97,7 @@ namespace TrustEDU.Core.Models.SmartContract
                 case OpCode.APPEND:
                     {
                         if (CurrentContext.EvaluationStack.Count < 2) return false;
-                        if (!(CurrentContext.EvaluationStack.Peek(1) is Array array)) return false;
+                        if (!(CurrentContext.EvaluationStack.Peek(1) is VM.Base.Types.Array array)) return false;
                         size = array.Count + 1;
                     }
                     break;
@@ -347,10 +360,10 @@ namespace TrustEDU.Core.Models.SmartContract
                         break;
                     case OpCode.NEWARRAY:
                     case OpCode.NEWSTRUCT:
-                        stackitem_count += ((Array)CurrentContext.EvaluationStack.Peek()).Count;
+                        stackitem_count += ((VM.Base.Types.Array)CurrentContext.EvaluationStack.Peek()).Count;
                         break;
                     case OpCode.KEYS:
-                        stackitem_count += ((Array)CurrentContext.EvaluationStack.Peek()).Count;
+                        stackitem_count += ((VM.Base.Types.Array)CurrentContext.EvaluationStack.Peek()).Count;
                         is_stackitem_count_strict = false;
                         break;
                 }
@@ -431,7 +444,7 @@ namespace TrustEDU.Core.Models.SmartContract
                 count++;
                 switch (item)
                 {
-                    case Array array:
+                    case VM.Base.Types.Array array:
                         if (counted.Any(p => ReferenceEquals(p, array)))
                             continue;
                         counted.Add(array);
@@ -478,7 +491,7 @@ namespace TrustEDU.Core.Models.SmartContract
                         var item = CurrentContext.EvaluationStack.Peek();
 
                         int n;
-                        if (item is Array array) n = array.Count;
+                        if (item is VM.Base.Types.Array array) n = array.Count;
                         else n = (int)item.GetBigInteger();
 
                         if (n < 1) return 1;
@@ -499,50 +512,50 @@ namespace TrustEDU.Core.Models.SmartContract
             switch (api_name)
             {
                 case "System.Runtime.CheckWitness":
-                case "Neo.Runtime.CheckWitness":
+                case "TrustEDU.Runtime.CheckWitness":
                 case "AntShares.Runtime.CheckWitness":
                     return 200;
                 case "System.Blockchain.GetHeader":
-                case "Neo.Blockchain.GetHeader":
+                case "TrustEDU.Blockchain.GetHeader":
                 case "AntShares.Blockchain.GetHeader":
                     return 100;
                 case "System.Blockchain.GetBlock":
-                case "Neo.Blockchain.GetBlock":
+                case "TrustEDU.Blockchain.GetBlock":
                 case "AntShares.Blockchain.GetBlock":
                     return 200;
                 case "System.Blockchain.GetTransaction":
-                case "Neo.Blockchain.GetTransaction":
+                case "TrustEDU.Blockchain.GetTransaction":
                 case "AntShares.Blockchain.GetTransaction":
                     return 100;
                 case "System.Blockchain.GetTransactionHeight":
-                case "Neo.Blockchain.GetTransactionHeight":
+                case "TrustEDU.Blockchain.GetTransactionHeight":
                     return 100;
-                case "Neo.Blockchain.GetAccount":
+                case "TrustEDU.Blockchain.GetAccount":
                 case "AntShares.Blockchain.GetAccount":
                     return 100;
-                case "Neo.Blockchain.GetValidators":
+                case "TrustEDU.Blockchain.GetValidators":
                 case "AntShares.Blockchain.GetValidators":
                     return 200;
-                case "Neo.Blockchain.GetAsset":
+                case "TrustEDU.Blockchain.GetAsset":
                 case "AntShares.Blockchain.GetAsset":
                     return 100;
                 case "System.Blockchain.GetContract":
-                case "Neo.Blockchain.GetContract":
+                case "TrustEDU.Blockchain.GetContract":
                 case "AntShares.Blockchain.GetContract":
                     return 100;
-                case "Neo.Transaction.GetReferences":
+                case "TrustEDU.Transaction.GetReferences":
                 case "AntShares.Transaction.GetReferences":
                     return 200;
-                case "Neo.Transaction.GetUnspentCoins":
+                case "TrustEDU.Transaction.GetUnspentCoins":
                     return 200;
-                case "Neo.Asset.Create":
+                case "TrustEDU.Asset.Create":
                 case "AntShares.Asset.Create":
                     return 5000L * 100000000L / ratio;
-                case "Neo.Asset.Renew":
+                case "TrustEDU.Asset.Renew":
                 case "AntShares.Asset.Renew":
                     return (byte)CurrentContext.EvaluationStack.Peek(1).GetBigInteger() * 5000L * 100000000L / ratio;
-                case "Neo.Contract.Create":
-                case "Neo.Contract.Migrate":
+                case "TrustEDU.Contract.Create":
+                case "TrustEDU.Contract.Migrate":
                 case "AntShares.Contract.Create":
                 case "AntShares.Contract.Migrate":
                     long fee = 100L;
@@ -559,15 +572,15 @@ namespace TrustEDU.Core.Models.SmartContract
                     }
                     return fee * 100000000L / ratio;
                 case "System.Storage.Get":
-                case "Neo.Storage.Get":
+                case "TrustEDU.Storage.Get":
                 case "AntShares.Storage.Get":
                     return 100;
                 case "System.Storage.Put":
-                case "Neo.Storage.Put":
+                case "TrustEDU.Storage.Put":
                 case "AntShares.Storage.Put":
                     return ((CurrentContext.EvaluationStack.Peek(1).GetByteArray().Length + CurrentContext.EvaluationStack.Peek(2).GetByteArray().Length - 1) / 1024 + 1) * 1000;
                 case "System.Storage.Delete":
-                case "Neo.Storage.Delete":
+                case "TrustEDU.Storage.Delete":
                 case "AntShares.Storage.Delete":
                     return 100;
                 default:

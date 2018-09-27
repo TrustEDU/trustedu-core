@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using TrustEDU.Core.Base.Types;
+using TrustEDU.Core.Models.Assets;
 using TrustEDU.Core.Models.Ledger;
+using Snapshot = TrustEDU.Core.Persistence.Snapshot;
 
 namespace TrustEDU.Core.Models.Transactions
 {

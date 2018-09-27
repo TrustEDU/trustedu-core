@@ -3,6 +3,7 @@ using System.Linq;
 using TrustEDU.Core.Base.Types;
 using TrustEDU.Core.Cryptography;
 using TrustEDU.Core.Models.Common;
+using TrustEDU.Core.Models.Wallets;
 
 namespace TrustEDU.Core.Base.Helpers
 {

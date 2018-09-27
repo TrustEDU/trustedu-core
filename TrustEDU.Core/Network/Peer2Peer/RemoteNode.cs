@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using Akka.Actor;
 using Akka.IO;
+using TrustEDU.Core.Base.Helpers;
 using TrustEDU.Core.Cryptography;
 using TrustEDU.Core.Models.Common;
 using TrustEDU.Core.Models.Inventory;
+using TrustEDU.Core.Models.Ledger;
 using TrustEDU.Core.Models.Network;
 using TrustEDU.Core.Models.Transactions;
 
@@ -180,7 +183,7 @@ namespace TrustEDU.Core.Network.Peer2Peer
             base.PostStop();
         }
 
-        internal static Props Props(NeoSystem system, object connection, IPEndPoint remote, IPEndPoint local)
+        internal static Props Props(TrustEDUNetwork system, object connection, IPEndPoint remote, IPEndPoint local)
         {
             return Akka.Actor.Props.Create(() => new RemoteNode(system, connection, remote, local)).WithMailbox("remote-node-mailbox");
         }
@@ -215,27 +218,6 @@ namespace TrustEDU.Core.Network.Peer2Peer
             Message message = msg_buffer.Slice(0, length).ToArray().AsSerializable<Message>();
             msg_buffer = msg_buffer.Slice(length).Compact();
             return message;
-        }
-    }
-
-    internal class RemoteNodeMailbox : PriorityMailbox
-    {
-        public RemoteNodeMailbox(Akka.Actor.Settings settings, Config config)
-            : base(settings, config)
-        {
-        }
-
-        protected override bool IsHighPriority(object message)
-        {
-            switch (message)
-            {
-                case Tcp.ConnectionClosed _:
-                case Connection.Timer _:
-                case Connection.Ack _:
-                    return true;
-                default:
-                    return false;
-            }
         }
     }
 }

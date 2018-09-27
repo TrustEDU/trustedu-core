@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Transactions;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.Extensions.DependencyInjection;
 using TrustEDU.Core.Base.Helpers;
 using TrustEDU.Core.Base.Json;
 using TrustEDU.Core.Base.Types;
@@ -14,6 +18,17 @@ using TrustEDU.Core.Models.Wallets;
 using TrustEDU.Core.Network.Peer2Peer;
 using TrustEDU.Core.Persistence;
 using TrustEDU.VM.Runtime;
+using TrustEDU.Core.Models.Transactions;
+using System.Threading.Tasks;
+using TrustEDU.Core.Models.Wallets.TERC1;
+using Akka.Actor;
+using System.Text;
+using System.IO;
+using TrustEDU.Core.Plugins;
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+using System.IO.Compression;
 
 namespace TrustEDU.Core.Network.RPC
 {
@@ -253,7 +268,7 @@ namespace TrustEDU.Core.Network.RPC
                     else
                     {
                         WalletAccount account = wallet.CreateAccount();
-                        if (wallet is NEP6Wallet nep6)
+                        if (wallet is TERC1Wallet nep6)
                             nep6.Save();
                         return account.Address;
                     }

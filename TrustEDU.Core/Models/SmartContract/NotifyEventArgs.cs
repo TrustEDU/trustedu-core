@@ -1,5 +1,5 @@
 ﻿using System;
-using TrustEDU.Core.Base;
+using TrustEDU.Core.Base.Types;
 using TrustEDU.VM.Base;
 using TrustEDU.VM.Runtime;
 

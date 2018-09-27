@@ -1,8 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using TrustEDU.Core.Base;
 using TrustEDU.Core.Base.Json;
+using TrustEDU.Core.Base.Types;
+using TrustEDU.Core.Models.Ledger;
 
 namespace TrustEDU.Core.Models.Transactions
 {

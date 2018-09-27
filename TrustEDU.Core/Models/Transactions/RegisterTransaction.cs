@@ -13,7 +13,7 @@ using TrustEDU.Core.Persistence;
 
 namespace TrustEDU.Core.Models.Transactions
 {
-    [Obsolete]
+    //[Obsolete]
     public class RegisterTransaction : Transaction
     {
         public AssetType AssetType;

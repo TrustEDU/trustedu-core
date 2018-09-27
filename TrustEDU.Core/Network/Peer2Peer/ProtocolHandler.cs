@@ -1,12 +1,18 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using Akka.Actor;
+using TrustEDU.Core.Base.Caching;
 using TrustEDU.Core.Base.Helpers;
 using TrustEDU.Core.Base.Types;
 using TrustEDU.Core.Cryptography;
+using TrustEDU.Core.Models.Inventory;
 using TrustEDU.Core.Models.Ledger;
 using TrustEDU.Core.Models.Network;
+using TrustEDU.Core.Models.Transactions;
+using Snapshot = TrustEDU.Core.Persistence.Snapshot;
 
 namespace TrustEDU.Core.Network.Peer2Peer
 {
@@ -100,7 +106,6 @@ namespace TrustEDU.Core.Network.Peer2Peer
                 case "pong":
                 case "reject":
                 default:
-                    //暂时忽略
                     break;
             }
         }
@@ -206,7 +211,7 @@ namespace TrustEDU.Core.Network.Peer2Peer
         {
             UInt256 hash = payload.HashStart[0];
             if (hash == payload.HashStop) return;
-            DataCache<UInt256, BlockState> cache = Blockchain.Singleton.Store.GetBlocks();
+            CacheItem<UInt256, BlockState> cache = Blockchain.Singleton.Store.GetBlocks();
             BlockState state = cache.TryGet(hash);
             if (state == null) return;
             List<Header> headers = new List<Header>();
@@ -273,51 +278,9 @@ namespace TrustEDU.Core.Network.Peer2Peer
             Context.Parent.Tell(new SetVersion { Version = payload });
         }
 
-        public static Props Props(NeoSystem system)
+        public static Props Props(TrustEDUNetwork system)
         {
             return Akka.Actor.Props.Create(() => new ProtocolHandler(system)).WithMailbox("protocol-handler-mailbox");
-        }
-    }
-
-    internal class ProtocolHandlerMailbox : PriorityMailbox
-    {
-        public ProtocolHandlerMailbox(Akka.Actor.Settings settings, Config config)
-            : base(settings, config)
-        {
-        }
-
-        protected override bool IsHighPriority(object message)
-        {
-            if (!(message is Message msg)) return true;
-            switch (msg.Command)
-            {
-                case "consensus":
-                case "filteradd":
-                case "filterclear":
-                case "filterload":
-                case "verack":
-                case "version":
-                case "alert":
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        protected override bool ShallDrop(object message, IEnumerable queue)
-        {
-            if (!(message is Message msg)) return false;
-            switch (msg.Command)
-            {
-                case "getaddr":
-                case "getblocks":
-                case "getdata":
-                case "getheaders":
-                case "mempool":
-                    return queue.OfType<Message>().Any(p => p.Command == msg.Command);
-                default:
-                    return false;
-            }
         }
     }
 }

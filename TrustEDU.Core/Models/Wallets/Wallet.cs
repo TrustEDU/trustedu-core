@@ -5,10 +5,11 @@ using System.Numerics;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Transactions;
 using TrustEDU.Core.Base.Helpers;
 using TrustEDU.Core.Base.Types;
+using TrustEDU.Core.Cryptography;
 using TrustEDU.Core.Models.Coins;
+using TrustEDU.Core.Models.Inventory;
 using TrustEDU.Core.Models.Ledger;
 using TrustEDU.Core.Models.SmartContract;
 using TrustEDU.Core.Models.Transactions;
@@ -68,25 +69,25 @@ namespace TrustEDU.Core.Models.Wallets
             return GetCoins(accounts).Where(p => p.State.HasFlag(CoinState.Confirmed) && !p.State.HasFlag(CoinState.Spent) && !p.State.HasFlag(CoinState.Frozen));
         }
 
-        public virtual Coin[] FindUnspentCoins(UInt256 asset_id, Fixed8 amount, params UInt160[] from)
+        public virtual Coin[] FindUnspentCoins(UInt256 assetId, Fixed8 amount, params UInt160[] from)
         {
-            return FindUnspentCoins(FindUnspentCoins(from), asset_id, amount);
+            return FindUnspentCoins(FindUnspentCoins(from), assetId, amount);
         }
 
-        protected static Coin[] FindUnspentCoins(IEnumerable<Coin> unspents, UInt256 asset_id, Fixed8 amount)
+        protected static Coin[] FindUnspentCoins(IEnumerable<Coin> unspents, UInt256 assetId, Fixed8 amount)
         {
-            Coin[] unspents_asset = unspents.Where(p => p.Output.AssetId == asset_id).ToArray();
-            Fixed8 sum = unspents_asset.Sum(p => p.Output.Value);
+            Coin[] unspenAssets = unspents.Where(p => p.Output.AssetId == assetId).ToArray();
+            Fixed8 sum = unspenAssets.Sum(p => p.Output.Value);
             if (sum < amount) return null;
-            if (sum == amount) return unspents_asset;
-            Coin[] unspents_ordered = unspents_asset.OrderByDescending(p => p.Output.Value).ToArray();
+            if (sum == amount) return unspenAssets;
+            Coin[] unspentOrdered = unspenAssets.OrderByDescending(p => p.Output.Value).ToArray();
             int i = 0;
-            while (unspents_ordered[i].Output.Value <= amount)
-                amount -= unspents_ordered[i++].Output.Value;
+            while (unspentOrdered[i].Output.Value <= amount)
+                amount -= unspentOrdered[i++].Output.Value;
             if (amount == Fixed8.Zero)
-                return unspents_ordered.Take(i).ToArray();
+                return unspentOrdered.Take(i).ToArray();
             else
-                return unspents_ordered.Take(i).Concat(new[] { unspents_ordered.Last(p => p.Output.Value >= amount) }).ToArray();
+                return unspentOrdered.Take(i).Concat(new[] { unspentOrdered.Last(p => p.Output.Value >= amount) }).ToArray();
         }
 
         public WalletAccount GetAccount(ECPoint pubkey)
@@ -94,22 +95,22 @@ namespace TrustEDU.Core.Models.Wallets
             return GetAccount(Contract.CreateSignatureRedeemScript(pubkey).ToScriptHash());
         }
 
-        public Fixed8 GetAvailable(UInt256 asset_id)
+        public Fixed8 GetAvailable(UInt256 assetId)
         {
-            return FindUnspentCoins().Where(p => p.Output.AssetId.Equals(asset_id)).Sum(p => p.Output.Value);
+            return FindUnspentCoins().Where(p => p.Output.AssetId.Equals(assetId)).Sum(p => p.Output.Value);
         }
 
-        public BigDecimal GetAvailable(UIntBase asset_id)
+        public BigDecimal GetAvailable(UIntBase assetId)
         {
-            if (asset_id is UInt160 asset_id_160)
+            if (assetId is UInt160 assetId160)
             {
                 byte[] script;
                 using (ScriptBuilder sb = new ScriptBuilder())
                 {
                     foreach (UInt160 account in GetAccounts().Where(p => !p.WatchOnly).Select(p => p.ScriptHash))
-                        sb.EmitAppCall(asset_id_160, "balanceOf", account);
+                        sb.EmitAppCall(assetId160, "balanceOf", account);
                     sb.Emit(OpCode.DEPTH, OpCode.PACK);
-                    sb.EmitAppCall(asset_id_160, "decimals");
+                    sb.EmitAppCall(assetId160, "decimals");
                     script = sb.ToArray();
                 }
                 ApplicationEngine engine = ApplicationEngine.Run(script);
@@ -121,13 +122,13 @@ namespace TrustEDU.Core.Models.Wallets
             }
             else
             {
-                return new BigDecimal(GetAvailable((UInt256)asset_id).GetData(), 8);
+                return new BigDecimal(GetAvailable((UInt256)assetId).GetData(), 8);
             }
         }
 
-        public Fixed8 GetBalance(UInt256 asset_id)
+        public Fixed8 GetBalance(UInt256 assetId)
         {
-            return GetCoins(GetAccounts().Select(p => p.ScriptHash)).Where(p => !p.State.HasFlag(CoinState.Spent) && p.Output.AssetId.Equals(asset_id)).Sum(p => p.Output.Value);
+            return GetCoins(GetAccounts().Select(p => p.ScriptHash)).Where(p => !p.State.HasFlag(CoinState.Spent) && p.Output.AssetId.Equals(assetId)).Sum(p => p.Output.Value);
         }
 
         public virtual UInt160 GetChangeAddress()
@@ -163,9 +164,9 @@ namespace TrustEDU.Core.Models.Wallets
             byte[] encryptedkey = new byte[32];
             Buffer.BlockCopy(data, 7, encryptedkey, 0, 32);
             byte[] prikey = XOR(encryptedkey.AES256Decrypt(derivedhalf2), derivedhalf1);
-            Cryptography.ECC.ECPoint pubkey = Cryptography.ECC.ECCurve.Secp256r1.G * prikey;
-            UInt160 script_hash = Contract.CreateSignatureRedeemScript(pubkey).ToScriptHash();
-            string address = script_hash.ToAddress();
+            ECPoint pubkey = Cryptography.ECC.ECCurve.Secp256r1.G * prikey;
+            UInt160 scriptHash = Contract.CreateSignatureRedeemScript(pubkey).ToScriptHash();
+            string address = scriptHash.ToAddress();
             if (!Encoding.ASCII.GetBytes(address).Sha256().Sha256().Take(4).SequenceEqual(addresshash))
                 throw new FormatException();
             return prikey;
@@ -226,31 +227,31 @@ namespace TrustEDU.Core.Models.Wallets
             if (tx.Outputs == null) tx.Outputs = new TransactionOutput[0];
             if (tx.Attributes == null) tx.Attributes = new TransactionAttribute[0];
             fee += tx.SystemFee;
-            var pay_total = (typeof(T) == typeof(IssueTransaction) ? new TransactionOutput[0] : tx.Outputs).GroupBy(p => p.AssetId, (k, g) => new
+            var totalPay = (typeof(T) == typeof(IssueTransaction) ? new TransactionOutput[0] : tx.Outputs).GroupBy(p => p.AssetId, (k, g) => new
             {
                 AssetId = k,
                 Value = g.Sum(p => p.Value)
             }).ToDictionary(p => p.AssetId);
             if (fee > Fixed8.Zero)
             {
-                if (pay_total.ContainsKey(Blockchain.UtilityToken.Hash))
+                if (totalPay.ContainsKey(Blockchain.UtilityToken.Hash))
                 {
-                    pay_total[Blockchain.UtilityToken.Hash] = new
+                    totalPay[Blockchain.UtilityToken.Hash] = new
                     {
                         AssetId = Blockchain.UtilityToken.Hash,
-                        Value = pay_total[Blockchain.UtilityToken.Hash].Value + fee
+                        Value = totalPay[Blockchain.UtilityToken.Hash].Value + fee
                     };
                 }
                 else
                 {
-                    pay_total.Add(Blockchain.UtilityToken.Hash, new
+                    totalPay.Add(Blockchain.UtilityToken.Hash, new
                     {
                         AssetId = Blockchain.UtilityToken.Hash,
                         Value = fee
                     });
                 }
             }
-            var pay_coins = pay_total.Select(p => new
+            var pay_coins = totalPay.Select(p => new
             {
                 AssetId = p.Key,
                 Unspents = from == null ? FindUnspentCoins(p.Key, p.Value.Value) : FindUnspentCoins(p.Key, p.Value.Value, from)
@@ -263,14 +264,14 @@ namespace TrustEDU.Core.Models.Wallets
             });
             if (change_address == null) change_address = GetChangeAddress();
             List<TransactionOutput> outputs_new = new List<TransactionOutput>(tx.Outputs);
-            foreach (UInt256 asset_id in input_sum.Keys)
+            foreach (UInt256 assetId in input_sum.Keys)
             {
-                if (input_sum[asset_id].Value > pay_total[asset_id].Value)
+                if (input_sum[assetId].Value > totalPay[assetId].Value)
                 {
                     outputs_new.Add(new TransactionOutput
                     {
-                        AssetId = asset_id,
-                        Value = input_sum[asset_id].Value - pay_total[asset_id].Value,
+                        AssetId = assetId,
+                        Value = input_sum[assetId].Value - totalPay[assetId].Value,
                         ScriptHash = change_address
                     });
                 }
