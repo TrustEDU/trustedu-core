@@ -1,4 +1,5 @@
 ﻿using System;
+using TrustEDU.Core.Base.Helpers;
 using TrustEDU.Core.Models.Transactions;
 
 namespace TrustEDU.Core.Models.Coins

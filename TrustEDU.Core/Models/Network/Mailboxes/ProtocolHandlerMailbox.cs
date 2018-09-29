@@ -2,8 +2,9 @@
 using System.Linq;
 using Akka.Configuration;
 using TrustEDU.Core.Models.Actors;
+using Message = TrustEDU.Core.Network.Peer2Peer.Message;
 
-namespace TrustEDU.Core.Network.Peer2Peer
+namespace TrustEDU.Core.Models.Network.Mailboxes
 {
     internal class ProtocolHandlerMailbox : PriorityMailbox
     {

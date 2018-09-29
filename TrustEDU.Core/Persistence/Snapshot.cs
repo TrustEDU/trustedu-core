@@ -250,7 +250,7 @@ namespace TrustEDU.Core.Persistence
             {
                 Count = i,
                 Votes = p
-            }).Where(p => p.Votes > Fixed8.Zero).ToArray().WeightedFilter(0.25, 0.75, p => p.Votes.GetData(), (p, w) => new
+            }).Where(p => p.Votes > Fixed8.Zero).ToArray().WeightedFilter(0.25m, 0.75m, p => p.Votes.GetData(), (p, w) => new
             {
                 p.Count,
                 Weight = w

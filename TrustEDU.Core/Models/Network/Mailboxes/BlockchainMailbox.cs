@@ -4,7 +4,7 @@ using TrustEDU.Core.Models.Actors;
 using TrustEDU.Core.Models.Ledger;
 using TrustEDU.Core.Models.Network;
 
-namespace TrustEDU.Core.Network.Peer2Peer
+namespace TrustEDU.Core.Models.Network.Mailboxes
 {
     internal class BlockchainMailbox : PriorityMailbox
     {

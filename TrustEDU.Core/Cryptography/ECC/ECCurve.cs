@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using System.Globalization;
+using System.Numerics;
+using TrustEDU.Core.Base.Helpers;
 
 namespace TrustEDU.Core.Cryptography.ECC
 {

@@ -11,6 +11,7 @@ using TrustEDU.Core.Cryptography;
 using TrustEDU.Core.Models.Inventory;
 using TrustEDU.Core.Models.Ledger;
 using TrustEDU.Core.Models.Network;
+using TrustEDU.Core.Models.Network.Peer2Peer;
 using TrustEDU.Core.Models.Transactions;
 using Snapshot = TrustEDU.Core.Persistence.Snapshot;
 

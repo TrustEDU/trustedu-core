@@ -5,6 +5,7 @@ using System.Linq;
 using TrustEDU.Core.Base.Types;
 using TrustEDU.Core.Models.Assets;
 using TrustEDU.Core.Models.Ledger;
+using TrustEDU.Core.Base.Helpers;
 using Snapshot = TrustEDU.Core.Persistence.Snapshot;
 
 namespace TrustEDU.Core.Models.Transactions
@@ -54,8 +55,14 @@ namespace TrustEDU.Core.Models.Transactions
                 AssetState asset = snapshot.Assets.TryGet(r.AssetId);
                 if (asset == null) return false;
                 if (asset.Amount < Fixed8.Zero) continue;
-                Fixed8 quantity_issued = asset.Available + mempool.OfType<IssueTransaction>().Where(p => p != this).SelectMany(p => p.Outputs).Where(p => p.AssetId == r.AssetId).Sum(p => p.Value);
-                if (asset.Amount - quantity_issued < -r.Amount) return false;
+                Fixed8 quantityIssued = 
+                    asset.Available 
+                         + mempool.OfType<IssueTransaction>()
+                         .Where(p => p != this)
+                         .SelectMany(p => p.Outputs)
+                         .Where(p => p.AssetId == r.AssetId)
+                         .Sum(p => p.Value);
+                if (asset.Amount - quantityIssued < -r.Amount) return false;
             }
             return true;
         }

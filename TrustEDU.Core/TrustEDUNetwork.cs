@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Net;
 using Akka.Actor;
-using TrustEDU.Core.Models.Ledger;
+using TrustEDU.Core.Consensus;
+using TrustEDU.Core.Models.Network.Mailboxes;
 using TrustEDU.Core.Models.Wallets;
 using TrustEDU.Core.Network.Peer2Peer;
 using TrustEDU.Core.Network.RPC;
 using TrustEDU.Core.Persistence;
 using TrustEDU.Core.Plugins;
+using SelfBlockchain = TrustEDU.Core.Models.Ledger.Blockchain;
+using SelfLocalNode = TrustEDU.Core.Network.Peer2Peer.LocalNode;
+using SelfTaskManager = TrustEDU.Core.Network.Peer2Peer.TaskManager;
 
 namespace TrustEDU.Core
 {
@@ -27,9 +31,9 @@ namespace TrustEDU.Core
 
         public TrustEDUNetwork(Store store)
         {
-            this.Blockchain = ActorSystem.ActorOf(Logger.Blockchain.Props(this, store));
-            this.LocalNode = ActorSystem.ActorOf(LocalNode.Props(this));
-            this.TaskManager = ActorSystem.ActorOf(TaskManager.Props(this));
+            this.Blockchain = ActorSystem.ActorOf(SelfBlockchain.Props(this, store));
+            this.LocalNode = ActorSystem.ActorOf(SelfLocalNode.Props(this));
+            this.TaskManager = ActorSystem.ActorOf(SelfTaskManager.Props(this));
             Plugin.LoadPlugins(this);
         }
 

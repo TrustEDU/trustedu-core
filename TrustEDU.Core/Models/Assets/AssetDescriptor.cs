@@ -1,4 +1,5 @@
 ﻿using System;
+using TrustEDU.Core.Base.Helpers;
 using TrustEDU.Core.Base.Types;
 using TrustEDU.Core.Models.Ledger;
 using TrustEDU.Core.Models.SmartContract;

@@ -27,9 +27,9 @@ namespace TrustEDU.Core.Network.Peer2Peer
 
         private const int MaxConnectionsPerAddress = 3;
 
-        private static readonly IActorRef tcp_manager = Context.System.Tcp();
-        private IActorRef tcp_listener;
-        private IWebHost ws_host;
+        private static readonly IActorRef tcpManager = Context.System.Tcp();
+        private IActorRef tcpListener;
+        private IWebHost webHostBuilder;
         private ICancelable timer;
         protected ActorSelection Connections => Context.ActorSelection("connection_*");
 
@@ -63,7 +63,7 @@ namespace TrustEDU.Core.Network.Peer2Peer
             if (ConnectedAddresses.TryGetValue(endPoint.Address, out int count) && count >= MaxConnectionsPerAddress)
                 return;
             if (ConnectedPeers.Values.Contains(endPoint)) return;
-            tcp_manager.Tell(new Tcp.Connect(endPoint));
+            tcpManager.Tell(new Tcp.Connect(endPoint));
         }
 
         private static bool IsIntranetAddress(IPAddress address)
@@ -99,7 +99,7 @@ namespace TrustEDU.Core.Network.Peer2Peer
                     OnTcpConnected(((IPEndPoint)connected.RemoteAddress).Unmap(), ((IPEndPoint)connected.LocalAddress).Unmap());
                     break;
                 case Tcp.Bound _:
-                    tcp_listener = Sender;
+                    tcpListener = Sender;
                     break;
                 case Tcp.CommandFailed _:
                     break;
@@ -129,12 +129,16 @@ namespace TrustEDU.Core.Network.Peer2Peer
             }
             if (port > 0)
             {
-                tcp_manager.Tell(new Tcp.Bind(Self, new IPEndPoint(IPAddress.Any, port), options: new[] { new Inet.SO.ReuseAddress(true) }));
+                tcpManager.Tell(new Tcp.Bind(Self, new IPEndPoint(IPAddress.Any, port), options: new[] { new Inet.SO.ReuseAddress(true) }));
             }
             if (wsPort > 0)
             {
-                ws_host = new WebHostBuilder().UseKestrel().UseUrls($"http://*:{wsPort}").Configure(app => app.UseWebSockets().Run(ProcessWebSocketAsync)).Build();
-                ws_host.Start();
+                webHostBuilder = new WebHostBuilder()
+                    .UseKestrel()
+                    .UseUrls($"http://*:{wsPort}")
+                    .Configure(app => app.UseWebSockets().Run(ProcessWebSocketAsync))
+                    .Build();
+                webHostBuilder.Start();
             }
         }
 
@@ -198,8 +202,8 @@ namespace TrustEDU.Core.Network.Peer2Peer
         protected override void PostStop()
         {
             timer.CancelIfNotNull();
-            ws_host?.Dispose();
-            tcp_listener?.Tell(Tcp.Unbind.Instance);
+            webHostBuilder?.Dispose();
+            tcpListener?.Tell(Tcp.Unbind.Instance);
             base.PostStop();
         }
 
