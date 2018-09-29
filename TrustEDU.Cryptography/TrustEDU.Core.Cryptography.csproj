@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageVersion>0.0.1</PackageVersion>
+    <Authors>TrustEDU Network</Authors>
+    <Description>The base cryptography functions which using in the TrustEDU Network Blockchain</Description>
+    <PackageId>TrustEDU.Core.Cryptography</PackageId>
+    <PackOnBuild>true</PackOnBuild>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <PackageLicenseUrl>https://github.com/TrustEDU/trustedu-core/blob/master/LICENSE</PackageLicenseUrl>
+    <Owners>TrustEDU Network</Owners>
+    <PackageProjectUrl>https://github.com/TrustEDU/trustedu-core</PackageProjectUrl>
+    <Summary>TrustEDU.Core.Cryptography</Summary>
+    <Title>TrustEDU.Core.Cryptography</Title>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType></DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Class1.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NuGet.Build.Packaging" Version="0.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Helpers\" />
+  </ItemGroup>
+</Project>
