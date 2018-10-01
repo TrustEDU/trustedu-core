@@ -120,20 +120,20 @@ namespace TrustEDU.Core.Base.Caching
             }
         }
 
-        public IEnumerable<KeyValuePair<TKey, TValue>> Find(byte[] key_prefix = null)
+        public IEnumerable<KeyValuePair<TKey, TValue>> Find(byte[] keyPrefix = null)
         {
             lock (dictionary)
             {
-                foreach (var pair in FindInternal(key_prefix ?? new byte[0]))
+                foreach (var pair in FindInternal(keyPrefix ?? new byte[0]))
                     if (!dictionary.ContainsKey(pair.Key))
                         yield return pair;
                 foreach (var pair in dictionary)
-                    if (pair.Value.State != TrackState.Deleted && (key_prefix == null || pair.Key.ToArray().Take(key_prefix.Length).SequenceEqual(key_prefix)))
+                    if (pair.Value.State != TrackState.Deleted && (keyPrefix == null || pair.Key.ToArray().Take(keyPrefix.Length).SequenceEqual(keyPrefix)))
                         yield return new KeyValuePair<TKey, TValue>(pair.Key, pair.Value.Item);
             }
         }
 
-        protected abstract IEnumerable<KeyValuePair<TKey, TValue>> FindInternal(byte[] key_prefix);
+        protected abstract IEnumerable<KeyValuePair<TKey, TValue>> FindInternal(byte[] keyPrefix);
 
         protected internal IEnumerable<Trackable> GetChangeSet()
         {
