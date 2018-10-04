@@ -22,36 +22,36 @@ namespace TrustEDU.Core.Consensus
         public class Start { }
         internal class Timer { public uint Height; public byte ViewNumber; }
 
-        private readonly ConsensusContext context = new ConsensusContext();
-        private readonly TrustEDUNetwork system;
-        private readonly Wallet wallet;
-        private DateTime block_received_time;
+        private readonly ConsensusContext _context = new ConsensusContext();
+        private readonly TrustEDUNetwork _system;
+        private readonly Wallet _wallet;
+        private DateTime _blockReceivedTime;
 
         public ConsensusService(TrustEDUNetwork system, Wallet wallet)
         {
-            this.system = system;
-            this.wallet = wallet;
+            this._system = system;
+            this._wallet = wallet;
         }
 
         private bool AddTransaction(Transaction tx, bool verify)
         {
-            if (context.Snapshot.ContainsTransaction(tx.Hash) ||
-                (verify && !tx.Verify(context.Snapshot, context.Transactions.Values)) ||
+            if (_context.Snapshot.ContainsTransaction(tx.Hash) ||
+                (verify && !tx.Verify(_context.Snapshot, _context.Transactions.Values)) ||
                 !Plugin.CheckPolicy(tx))
             {
                 Log($"reject tx: {tx.Hash}{Environment.NewLine}{tx.ToArray().ToHexString()}", LogLevel.Warning);
                 RequestChangeView();
                 return false;
             }
-            context.Transactions[tx.Hash] = tx;
-            if (context.TransactionHashes.Length == context.Transactions.Count)
+            _context.Transactions[tx.Hash] = tx;
+            if (_context.TransactionHashes.Length == _context.Transactions.Count)
             {
-                if (Blockchain.GetConsensusAddress(context.Snapshot.GetValidators(context.Transactions.Values).ToArray()).Equals(context.NextConsensus))
+                if (Blockchain.GetConsensusAddress(_context.Snapshot.GetValidators(_context.Transactions.Values).ToArray()).Equals(_context.NextConsensus))
                 {
                     Log($"send prepare response");
-                    context.State |= ConsensusState.SignatureSent;
-                    context.Signatures[context.MyIndex] = context.MakeHeader().Sign(context.KeyPair);
-                    SignAndRelay(context.MakePrepareResponse(context.Signatures[context.MyIndex]));
+                    _context.State |= ConsensusState.SignatureSent;
+                    _context.Signatures[_context.MyIndex] = _context.MakeHeader().Sign(_context.KeyPair);
+                    SignAndRelay(_context.MakePrepareResponse(_context.Signatures[_context.MyIndex]));
                     CheckSignatures();
                 }
                 else
@@ -67,53 +67,53 @@ namespace TrustEDU.Core.Consensus
         {
             Context.System.Scheduler.ScheduleTellOnce(delay, Self, new Timer
             {
-                Height = context.BlockIndex,
-                ViewNumber = context.ViewNumber
+                Height = _context.BlockIndex,
+                ViewNumber = _context.ViewNumber
             }, ActorRefs.NoSender);
         }
 
-        private void CheckExpectedView(byte view_number)
+        private void CheckExpectedView(byte viewNumber)
         {
-            if (context.ViewNumber == view_number) return;
-            if (context.ExpectedView.Count(p => p == view_number) >= context.M)
+            if (_context.ViewNumber == viewNumber) return;
+            if (_context.ExpectedView.Count(p => p == viewNumber) >= _context.M)
             {
-                InitializeConsensus(view_number);
+                InitializeConsensus(viewNumber);
             }
         }
 
         private void CheckSignatures()
         {
-            if (context.Signatures.Count(p => p != null) >= context.M && context.TransactionHashes.All(p => context.Transactions.ContainsKey(p)))
+            if (_context.Signatures.Count(p => p != null) >= _context.M && _context.TransactionHashes.All(p => _context.Transactions.ContainsKey(p)))
             {
-                Contract contract = Contract.CreateMultiSigContract(context.M, context.Validators);
-                Block block = context.MakeHeader();
+                Contract contract = Contract.CreateMultiSigContract(_context.M, _context.Validators);
+                Block block = _context.MakeHeader();
                 ContractParametersContext sc = new ContractParametersContext(block);
-                for (int i = 0, j = 0; i < context.Validators.Length && j < context.M; i++)
-                    if (context.Signatures[i] != null)
+                for (int i = 0, j = 0; i < _context.Validators.Length && j < _context.M; i++)
+                    if (_context.Signatures[i] != null)
                     {
-                        sc.AddSignature(contract, context.Validators[i], context.Signatures[i]);
+                        sc.AddSignature(contract, _context.Validators[i], _context.Signatures[i]);
                         j++;
                     }
                 sc.Verifiable.Witnesses = sc.GetWitnesses();
-                block.Transactions = context.TransactionHashes.Select(p => context.Transactions[p]).ToArray();
+                block.Transactions = _context.TransactionHashes.Select(p => _context.Transactions[p]).ToArray();
                 Log($"relay block: {block.Hash}");
-                system.LocalNode.Tell(new LocalNode.Relay { Inventory = block });
-                context.State |= ConsensusState.BlockSent;
+                _system.LocalNode.Tell(new LocalNode.Relay { Inventory = block });
+                _context.State |= ConsensusState.BlockSent;
             }
         }
 
         private void FillContext()
         {
-            IEnumerable<Transaction> mem_pool = Blockchain.Singleton.GetMemoryPool();
+            IEnumerable<Transaction> memPool = Blockchain.Singleton.GetMemoryPool();
             foreach (IPolicyPlugin plugin in Plugin.Policies)
-                mem_pool = plugin.FilterForBlock(mem_pool);
-            List<Transaction> transactions = mem_pool.ToList();
-            Fixed8 amount_netfee = Block.CalculateNetFee(transactions);
-            TransactionOutput[] outputs = amount_netfee == Fixed8.Zero ? new TransactionOutput[0] : new[] { new TransactionOutput
+                memPool = plugin.FilterForBlock(memPool);
+            List<Transaction> transactions = memPool.ToList();
+            Fixed8 amountNetfee = Block.CalculateNetFee(transactions);
+            TransactionOutput[] outputs = amountNetfee == Fixed8.Zero ? new TransactionOutput[0] : new[] { new TransactionOutput
             {
                 AssetId = Blockchain.UtilityToken.Hash,
-                Value = amount_netfee,
-                ScriptHash = wallet.GetChangeAddress()
+                Value = amountNetfee,
+                ScriptHash = _wallet.GetChangeAddress()
             } };
             while (true)
             {
@@ -126,16 +126,16 @@ namespace TrustEDU.Core.Consensus
                     Outputs = outputs,
                     Witnesses = new Witness[0]
                 };
-                if (!context.Snapshot.ContainsTransaction(tx.Hash))
+                if (!_context.Snapshot.ContainsTransaction(tx.Hash))
                 {
-                    context.Nonce = nonce;
+                    _context.Nonce = nonce;
                     transactions.Insert(0, tx);
                     break;
                 }
             }
-            context.TransactionHashes = transactions.Select(p => p.Hash).ToArray();
-            context.Transactions = transactions.ToDictionary(p => p.Hash);
-            context.NextConsensus = Blockchain.GetConsensusAddress(context.Snapshot.GetValidators(transactions).ToArray());
+            _context.TransactionHashes = transactions.Select(p => p.Hash).ToArray();
+            _context.Transactions = transactions.ToDictionary(p => p.Hash);
+            _context.NextConsensus = Blockchain.GetConsensusAddress(_context.Snapshot.GetValidators(transactions).ToArray());
         }
 
         private static ulong GetNonce()
@@ -146,20 +146,20 @@ namespace TrustEDU.Core.Consensus
             return nonce.ToUInt64(0);
         }
 
-        private void InitializeConsensus(byte view_number)
+        private void InitializeConsensus(byte viewNumber)
         {
-            if (view_number == 0)
-                context.Reset(wallet);
+            if (viewNumber == 0)
+                _context.Reset(_wallet);
             else
-                context.ChangeView(view_number);
-            if (context.MyIndex < 0) return;
-            if (view_number > 0)
-                Log($"changeview: view={view_number} primary={context.Validators[context.GetPrimaryIndex((byte)(view_number - 1u))]}", LogLevel.Warning);
-            Log($"initialize: height={context.BlockIndex} view={view_number} index={context.MyIndex} role={(context.MyIndex == context.PrimaryIndex ? ConsensusState.Primary : ConsensusState.Backup)}");
-            if (context.MyIndex == context.PrimaryIndex)
+                _context.ChangeView(viewNumber);
+            if (_context.MyIndex < 0) return;
+            if (viewNumber > 0)
+                Log($"changeview: view={viewNumber} primary={_context.Validators[_context.GetPrimaryIndex((byte)(viewNumber - 1u))]}", LogLevel.Warning);
+            Log($"initialize: height={_context.BlockIndex} view={viewNumber} index={_context.MyIndex} role={(_context.MyIndex == _context.PrimaryIndex ? ConsensusState.Primary : ConsensusState.Backup)}");
+            if (_context.MyIndex == _context.PrimaryIndex)
             {
-                context.State |= ConsensusState.Primary;
-                TimeSpan span = DateTime.Now - block_received_time;
+                _context.State |= ConsensusState.Primary;
+                TimeSpan span = DateTime.Now - _blockReceivedTime;
                 if (span >= Blockchain.TimePerBlock)
                     ChangeTimer(TimeSpan.Zero);
                 else
@@ -167,8 +167,8 @@ namespace TrustEDU.Core.Consensus
             }
             else
             {
-                context.State = ConsensusState.Backup;
-                ChangeTimer(TimeSpan.FromSeconds(Blockchain.SecondsPerBlock << (view_number + 1)));
+                _context.State = ConsensusState.Backup;
+                ChangeTimer(TimeSpan.FromSeconds(Blockchain.SecondsPerBlock << (viewNumber + 1)));
             }
         }
 
@@ -180,26 +180,26 @@ namespace TrustEDU.Core.Consensus
         private void OnChangeViewReceived(ConsensusPayload payload, ChangeView message)
         {
             Log($"{nameof(OnChangeViewReceived)}: height={payload.BlockIndex} view={message.ViewNumber} index={payload.ValidatorIndex} nv={message.NewViewNumber}");
-            if (message.NewViewNumber <= context.ExpectedView[payload.ValidatorIndex])
+            if (message.NewViewNumber <= _context.ExpectedView[payload.ValidatorIndex])
                 return;
-            context.ExpectedView[payload.ValidatorIndex] = message.NewViewNumber;
+            _context.ExpectedView[payload.ValidatorIndex] = message.NewViewNumber;
             CheckExpectedView(message.NewViewNumber);
         }
 
         private void OnConsensusPayload(ConsensusPayload payload)
         {
-            if (payload.ValidatorIndex == context.MyIndex) return;
+            if (payload.ValidatorIndex == _context.MyIndex) return;
             if (payload.Version != ConsensusContext.Version)
                 return;
-            if (payload.PrevHash != context.PrevHash || payload.BlockIndex != context.BlockIndex)
+            if (payload.PrevHash != _context.PrevHash || payload.BlockIndex != _context.BlockIndex)
             {
-                if (context.Snapshot.Height + 1 < payload.BlockIndex)
+                if (_context.Snapshot.Height + 1 < payload.BlockIndex)
                 {
-                    Log($"chain sync: expected={payload.BlockIndex} current: {context.Snapshot.Height} nodes={LocalNode.Singleton.ConnectedCount}", LogLevel.Warning);
+                    Log($"chain sync: expected={payload.BlockIndex} current: {_context.Snapshot.Height} nodes={LocalNode.Singleton.ConnectedCount}", LogLevel.Warning);
                 }
                 return;
             }
-            if (payload.ValidatorIndex >= context.Validators.Length) return;
+            if (payload.ValidatorIndex >= _context.Validators.Length) return;
             ConsensusMessage message;
             try
             {
@@ -209,7 +209,7 @@ namespace TrustEDU.Core.Consensus
             {
                 return;
             }
-            if (message.ViewNumber != context.ViewNumber && message.Type != ConsensusMessageType.ChangeView)
+            if (message.ViewNumber != _context.ViewNumber && message.Type != ConsensusMessageType.ChangeView)
                 return;
             switch (message.Type)
             {
@@ -228,44 +228,44 @@ namespace TrustEDU.Core.Consensus
         private void OnPersistCompleted(Block block)
         {
             Log($"persist block: {block.Hash}");
-            block_received_time = DateTime.Now;
+            _blockReceivedTime = DateTime.Now;
             InitializeConsensus(0);
         }
 
         private void OnPrepareRequestReceived(ConsensusPayload payload, PrepareRequest message)
         {
             Log($"{nameof(OnPrepareRequestReceived)}: height={payload.BlockIndex} view={message.ViewNumber} index={payload.ValidatorIndex} tx={message.TransactionHashes.Length}");
-            if (!context.State.HasFlag(ConsensusState.Backup) || context.State.HasFlag(ConsensusState.RequestReceived))
+            if (!_context.State.HasFlag(ConsensusState.Backup) || _context.State.HasFlag(ConsensusState.RequestReceived))
                 return;
-            if (payload.ValidatorIndex != context.PrimaryIndex) return;
-            if (payload.Timestamp <= context.Snapshot.GetHeader(context.PrevHash).Timestamp || payload.Timestamp > DateTime.Now.AddMinutes(10).ToTimestamp())
+            if (payload.ValidatorIndex != _context.PrimaryIndex) return;
+            if (payload.Timestamp <= _context.Snapshot.GetHeader(_context.PrevHash).Timestamp || payload.Timestamp > DateTime.Now.AddMinutes(10).ToTimestamp())
             {
                 Log($"Timestamp incorrect: {payload.Timestamp}", LogLevel.Warning);
                 return;
             }
-            context.State |= ConsensusState.RequestReceived;
-            context.Timestamp = payload.Timestamp;
-            context.Nonce = message.Nonce;
-            context.NextConsensus = message.NextConsensus;
-            context.TransactionHashes = message.TransactionHashes;
-            context.Transactions = new Dictionary<UInt256, Transaction>();
-            if (!Crypto.Default.VerifySignature(context.MakeHeader().GetHashData(), message.Signature, context.Validators[payload.ValidatorIndex].EncodePoint(false))) return;
-            context.Signatures = new byte[context.Validators.Length][];
-            context.Signatures[payload.ValidatorIndex] = message.Signature;
+            _context.State |= ConsensusState.RequestReceived;
+            _context.Timestamp = payload.Timestamp;
+            _context.Nonce = message.Nonce;
+            _context.NextConsensus = message.NextConsensus;
+            _context.TransactionHashes = message.TransactionHashes;
+            _context.Transactions = new Dictionary<UInt256, Transaction>();
+            if (!Crypto.Default.VerifySignature(_context.MakeHeader().GetHashData(), message.Signature, _context.Validators[payload.ValidatorIndex].EncodePoint(false))) return;
+            _context.Signatures = new byte[_context.Validators.Length][];
+            _context.Signatures[payload.ValidatorIndex] = message.Signature;
             Dictionary<UInt256, Transaction> mempool = Blockchain.Singleton.GetMemoryPool().ToDictionary(p => p.Hash);
-            foreach (UInt256 hash in context.TransactionHashes.Skip(1))
+            foreach (UInt256 hash in _context.TransactionHashes.Skip(1))
             {
                 if (mempool.TryGetValue(hash, out Transaction tx))
                     if (!AddTransaction(tx, false))
                         return;
             }
             if (!AddTransaction(message.MinerTransaction, true)) return;
-            if (context.Transactions.Count < context.TransactionHashes.Length)
+            if (_context.Transactions.Count < _context.TransactionHashes.Length)
             {
-                UInt256[] hashes = context.TransactionHashes.Where(i => !context.Transactions.ContainsKey(i)).ToArray();
-                system.TaskManager.Tell(new TaskManager.RestartTasks
+                UInt256[] hashes = _context.TransactionHashes.Where(i => !_context.Transactions.ContainsKey(i)).ToArray();
+                _system.TaskManager.Tell(new TaskManager.RestartTasks
                 {
-                    Payload = InvPayload.Create(InventoryType.TX, hashes)
+                    Payload = InvPayload.Create(InventoryType.Tx, hashes)
                 });
             }
         }
@@ -273,11 +273,11 @@ namespace TrustEDU.Core.Consensus
         private void OnPrepareResponseReceived(ConsensusPayload payload, PrepareResponse message)
         {
             Log($"{nameof(OnPrepareResponseReceived)}: height={payload.BlockIndex} view={message.ViewNumber} index={payload.ValidatorIndex}");
-            if (context.State.HasFlag(ConsensusState.BlockSent)) return;
-            if (context.Signatures[payload.ValidatorIndex] != null) return;
-            Block header = context.MakeHeader();
-            if (header == null || !Crypto.Default.VerifySignature(header.GetHashData(), message.Signature, context.Validators[payload.ValidatorIndex].EncodePoint(false))) return;
-            context.Signatures[payload.ValidatorIndex] = message.Signature;
+            if (_context.State.HasFlag(ConsensusState.BlockSent)) return;
+            if (_context.Signatures[payload.ValidatorIndex] != null) return;
+            Block header = _context.MakeHeader();
+            if (header == null || !Crypto.Default.VerifySignature(header.GetHashData(), message.Signature, _context.Validators[payload.ValidatorIndex].EncodePoint(false))) return;
+            _context.Signatures[payload.ValidatorIndex] = message.Signature;
             CheckSignatures();
         }
 
@@ -311,27 +311,27 @@ namespace TrustEDU.Core.Consensus
 
         private void OnTimer(Timer timer)
         {
-            if (timer.Height != context.BlockIndex || timer.ViewNumber != context.ViewNumber) return;
-            Log($"timeout: height={timer.Height} view={timer.ViewNumber} state={context.State}");
-            if (context.State.HasFlag(ConsensusState.Primary) && !context.State.HasFlag(ConsensusState.RequestSent))
+            if (timer.Height != _context.BlockIndex || timer.ViewNumber != _context.ViewNumber) return;
+            Log($"timeout: height={timer.Height} view={timer.ViewNumber} state={_context.State}");
+            if (_context.State.HasFlag(ConsensusState.Primary) && !_context.State.HasFlag(ConsensusState.RequestSent))
             {
                 Log($"send prepare request: height={timer.Height} view={timer.ViewNumber}");
-                context.State |= ConsensusState.RequestSent;
-                if (!context.State.HasFlag(ConsensusState.SignatureSent))
+                _context.State |= ConsensusState.RequestSent;
+                if (!_context.State.HasFlag(ConsensusState.SignatureSent))
                 {
                     FillContext();
-                    context.Timestamp = Math.Max(DateTime.Now.ToTimestamp(), context.Snapshot.GetHeader(context.PrevHash).Timestamp + 1);
-                    context.Signatures[context.MyIndex] = context.MakeHeader().Sign(context.KeyPair);
+                    _context.Timestamp = Math.Max(DateTime.Now.ToTimestamp(), _context.Snapshot.GetHeader(_context.PrevHash).Timestamp + 1);
+                    _context.Signatures[_context.MyIndex] = _context.MakeHeader().Sign(_context.KeyPair);
                 }
-                SignAndRelay(context.MakePrepareRequest());
-                if (context.TransactionHashes.Length > 1)
+                SignAndRelay(_context.MakePrepareRequest());
+                if (_context.TransactionHashes.Length > 1)
                 {
-                    foreach (InvPayload payload in InvPayload.CreateGroup(InventoryType.TX, context.TransactionHashes.Skip(1).ToArray()))
-                        system.LocalNode.Tell(Message.Create("inv", payload));
+                    foreach (InvPayload payload in InvPayload.CreateGroup(InventoryType.Tx, _context.TransactionHashes.Skip(1).ToArray()))
+                        _system.LocalNode.Tell(Message.Create("inv", payload));
                 }
                 ChangeTimer(TimeSpan.FromSeconds(Blockchain.SecondsPerBlock << (timer.ViewNumber + 1)));
             }
-            else if ((context.State.HasFlag(ConsensusState.Primary) && context.State.HasFlag(ConsensusState.RequestSent)) || context.State.HasFlag(ConsensusState.Backup))
+            else if ((_context.State.HasFlag(ConsensusState.Primary) && _context.State.HasFlag(ConsensusState.RequestSent)) || _context.State.HasFlag(ConsensusState.Backup))
             {
                 RequestChangeView();
             }
@@ -340,17 +340,17 @@ namespace TrustEDU.Core.Consensus
         private void OnTransaction(Transaction transaction)
         {
             if (transaction.Type == TransactionType.MinerTransaction) return;
-            if (!context.State.HasFlag(ConsensusState.Backup) || !context.State.HasFlag(ConsensusState.RequestReceived) || context.State.HasFlag(ConsensusState.SignatureSent) || context.State.HasFlag(ConsensusState.ViewChanging))
+            if (!_context.State.HasFlag(ConsensusState.Backup) || !_context.State.HasFlag(ConsensusState.RequestReceived) || _context.State.HasFlag(ConsensusState.SignatureSent) || _context.State.HasFlag(ConsensusState.ViewChanging))
                 return;
-            if (context.Transactions.ContainsKey(transaction.Hash)) return;
-            if (!context.TransactionHashes.Contains(transaction.Hash)) return;
+            if (_context.Transactions.ContainsKey(transaction.Hash)) return;
+            if (!_context.TransactionHashes.Contains(transaction.Hash)) return;
             AddTransaction(transaction, true);
         }
 
         protected override void PostStop()
         {
             Log("OnStop");
-            context.Dispose();
+            _context.Dispose();
             base.PostStop();
         }
 
@@ -361,12 +361,12 @@ namespace TrustEDU.Core.Consensus
 
         private void RequestChangeView()
         {
-            context.State |= ConsensusState.ViewChanging;
-            context.ExpectedView[context.MyIndex]++;
-            Log($"request change view: height={context.BlockIndex} view={context.ViewNumber} nv={context.ExpectedView[context.MyIndex]} state={context.State}");
-            ChangeTimer(TimeSpan.FromSeconds(Blockchain.SecondsPerBlock << (context.ExpectedView[context.MyIndex] + 1)));
-            SignAndRelay(context.MakeChangeView());
-            CheckExpectedView(context.ExpectedView[context.MyIndex]);
+            _context.State |= ConsensusState.ViewChanging;
+            _context.ExpectedView[_context.MyIndex]++;
+            Log($"request change view: height={_context.BlockIndex} view={_context.ViewNumber} nv={_context.ExpectedView[_context.MyIndex]} state={_context.State}");
+            ChangeTimer(TimeSpan.FromSeconds(Blockchain.SecondsPerBlock << (_context.ExpectedView[_context.MyIndex] + 1)));
+            SignAndRelay(_context.MakeChangeView());
+            CheckExpectedView(_context.ExpectedView[_context.MyIndex]);
         }
 
         private void SignAndRelay(ConsensusPayload payload)
@@ -375,14 +375,14 @@ namespace TrustEDU.Core.Consensus
             try
             {
                 sc = new ContractParametersContext(payload);
-                wallet.Sign(sc);
+                _wallet.Sign(sc);
             }
             catch (InvalidOperationException)
             {
                 return;
             }
             sc.Verifiable.Witnesses = sc.GetWitnesses();
-            system.LocalNode.Tell(new LocalNode.SendDirectly { Inventory = payload });
+            _system.LocalNode.Tell(new LocalNode.SendDirectly { Inventory = payload });
         }
     }
 }

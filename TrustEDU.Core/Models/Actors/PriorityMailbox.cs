@@ -8,7 +8,7 @@ namespace TrustEDU.Core.Models.Actors
 {
     internal abstract class PriorityMailbox : MailboxType, IProducesMessageQueue<PriorityMessageQueue>
     {
-        public PriorityMailbox(Settings settings, Config config)
+        protected PriorityMailbox(Settings settings, Config config)
             : base(settings, config)
         {
         }

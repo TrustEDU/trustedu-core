@@ -8,20 +8,20 @@ namespace TrustEDU.Core.Cryptography.ECC
 {
     public class ECDsa
     {
-        private readonly byte[] privateKey;
-        private readonly ECPoint publicKey;
-        private readonly ECCurve curve;
+        private readonly byte[] _privateKey;
+        private readonly ECPoint _publicKey;
+        private readonly ECCurve _curve;
 
         public ECDsa(byte[] privateKey, ECCurve curve)
             : this(curve.G * privateKey)
         {
-            this.privateKey = privateKey;
+            this._privateKey = privateKey;
         }
 
         public ECDsa(ECPoint publicKey)
         {
-            this.publicKey = publicKey;
-            this.curve = publicKey.Curve;
+            this._publicKey = publicKey;
+            this._curve = publicKey.Curve;
         }
 
         private BigInteger CalculateE(BigInteger n, byte[] message)
@@ -37,9 +37,9 @@ namespace TrustEDU.Core.Cryptography.ECC
 
         public BigInteger[] GenerateSignature(byte[] message)
         {
-            if (privateKey == null) throw new InvalidOperationException();
-            BigInteger e = CalculateE(curve.N, message);
-            BigInteger d = new BigInteger(privateKey.Reverse().Concat(new byte[1]).ToArray());
+            if (_privateKey == null) throw new InvalidOperationException();
+            BigInteger e = CalculateE(_curve.N, message);
+            BigInteger d = new BigInteger(_privateKey.Reverse().Concat(new byte[1]).ToArray());
             BigInteger r, s;
             using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
             {
@@ -50,18 +50,18 @@ namespace TrustEDU.Core.Cryptography.ECC
                     {
                         do
                         {
-                            k = rng.NextBigInteger(curve.N.GetBitLength());
+                            k = rng.NextBigInteger(_curve.N.GetBitLength());
                         }
-                        while (k.Sign == 0 || k.CompareTo(curve.N) >= 0);
-                        ECPoint p = ECPoint.Multiply(curve.G, k);
+                        while (k.Sign == 0 || k.CompareTo(_curve.N) >= 0);
+                        ECPoint p = ECPoint.Multiply(_curve.G, k);
                         BigInteger x = p.X.Value;
-                        r = x.Mod(curve.N);
+                        r = x.Mod(_curve.N);
                     }
                     while (r.Sign == 0);
-                    s = (k.ModInverse(curve.N) * (e + d * r)).Mod(curve.N);
-                    if (s > curve.N / 2)
+                    s = (k.ModInverse(_curve.N) * (e + d * r)).Mod(_curve.N);
+                    if (s > _curve.N / 2)
                     {
-                        s = curve.N - s;
+                        s = _curve.N - s;
                     }
                 }
                 while (s.Sign == 0);
@@ -95,14 +95,14 @@ namespace TrustEDU.Core.Cryptography.ECC
 
         public bool VerifySignature(byte[] message, BigInteger r, BigInteger s)
         {
-            if (r.Sign < 1 || s.Sign < 1 || r.CompareTo(curve.N) >= 0 || s.CompareTo(curve.N) >= 0)
+            if (r.Sign < 1 || s.Sign < 1 || r.CompareTo(_curve.N) >= 0 || s.CompareTo(_curve.N) >= 0)
                 return false;
-            BigInteger e = CalculateE(curve.N, message);
-            BigInteger c = s.ModInverse(curve.N);
-            BigInteger u1 = (e * c).Mod(curve.N);
-            BigInteger u2 = (r * c).Mod(curve.N);
-            ECPoint point = SumOfTwoMultiplies(curve.G, u1, publicKey, u2);
-            BigInteger v = point.X.Value.Mod(curve.N);
+            BigInteger e = CalculateE(_curve.N, message);
+            BigInteger c = s.ModInverse(_curve.N);
+            BigInteger u1 = (e * c).Mod(_curve.N);
+            BigInteger u2 = (r * c).Mod(_curve.N);
+            ECPoint point = SumOfTwoMultiplies(_curve.G, u1, _publicKey, u2);
+            BigInteger v = point.X.Value.Mod(_curve.N);
             return v.Equals(r);
         }
     }

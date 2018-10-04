@@ -50,7 +50,7 @@ namespace TrustEDU.Core.Models.Transactions
             }
         }
 
-        InventoryType IInventory.InventoryType => InventoryType.TX;
+        InventoryType IInventory.InventoryType => InventoryType.Tx;
 
         private Fixed8 _network_fee = -Fixed8.Penny;
         public virtual Fixed8 NetworkFee

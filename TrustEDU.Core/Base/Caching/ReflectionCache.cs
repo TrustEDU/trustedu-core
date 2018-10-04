@@ -7,24 +7,24 @@ namespace TrustEDU.Core.Base.Caching
 {
     public class ReflectionCache<T> : Dictionary<T, Type>
     {
-        public static ReflectionCache<T> CreateFromEnum<EnumType>() where EnumType : struct, IConvertible
+        public static ReflectionCache<T> CreateFromEnum<TEnumType>() where TEnumType : struct, IConvertible
         {
-            Type enumType = typeof(EnumType);
+            var enumType = typeof(TEnumType);
 
             if (!enumType.GetTypeInfo().IsEnum)
                 throw new ArgumentException("Enumerated type is required");
                 
-            ReflectionCache<T> r = new ReflectionCache<T>();
+            var r = new ReflectionCache<T>();
 
-            foreach (object t in Enum.GetValues(enumType))
+            foreach (var t in Enum.GetValues(enumType))
             {
                 // Get enumn member
-                MemberInfo[] memInfo = enumType.GetMember(t.ToString());
-                if (memInfo == null || memInfo.Length != 1)
+                var memInfo = enumType.GetMember(t.ToString());
+                if (memInfo.Length != 1)
                     throw (new FormatException());
 
                 // Get attribute
-                ReflectionCacheAttribute attribute = memInfo[0].GetCustomAttributes(typeof(ReflectionCacheAttribute), false)
+                var attribute = memInfo[0].GetCustomAttributes(typeof(ReflectionCacheAttribute), false)
                     .Cast<ReflectionCacheAttribute>()
                     .FirstOrDefault();
 
@@ -44,22 +44,20 @@ namespace TrustEDU.Core.Base.Caching
         public object CreateInstance(T key, object def = null)
         {
             // Get Type from cache
-            if (TryGetValue(key, out Type tp)) return Activator.CreateInstance(tp);
+            if (TryGetValue(key, out var tp)) return Activator.CreateInstance(tp);
 
             return def; // null
         }
         /// <summary>
         /// Creates a cache instance 
         /// </summary>
-        /// <typeparam name="K">Type</typeparam>
+        /// <typeparam name="TK">Type</typeparam>
         /// <param name="key">Key</param>
         /// <param name="def">Default value</param>
-        public K CreateInstance<K>(T key, K def = default(K))
+        public TK CreateInstance<TK>(T key, TK def = default(TK))
         {
-            Type tp;
-
             // Get Type from cache
-            if (TryGetValue(key, out tp)) return (K)Activator.CreateInstance(tp);
+            if (TryGetValue(key, out var tp)) return (TK)Activator.CreateInstance(tp);
 
             // return null
             return def;

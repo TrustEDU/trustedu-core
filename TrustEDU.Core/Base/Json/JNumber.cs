@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Reflection;
@@ -54,7 +55,7 @@ namespace TrustEDU.Core.Base.Json
 
         public override string AsString()
         {
-            return Value.ToString();
+            return Value.ToString(CultureInfo.InvariantCulture);
         }
 
         public override bool CanConvertTo(Type type)
@@ -75,7 +76,7 @@ namespace TrustEDU.Core.Base.Json
         internal static JNumber Parse(TextReader reader)
         {
             SkipSpace(reader);
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             while (true)
             {
                 char c = (char)reader.Peek();
@@ -94,7 +95,7 @@ namespace TrustEDU.Core.Base.Json
 
         public override string ToString()
         {
-            return Value.ToString();
+            return Value.ToString(CultureInfo.InvariantCulture);
         }
 
         public DateTime ToTimestamp()

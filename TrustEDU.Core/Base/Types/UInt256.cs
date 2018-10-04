@@ -38,7 +38,7 @@ namespace TrustEDU.Core.Base.Types
             return Equals(other);
         }
 
-        public static new UInt256 Parse(string s)
+        public new static UInt256 Parse(string s)
         {
             if (s == null)
                 throw new ArgumentNullException();

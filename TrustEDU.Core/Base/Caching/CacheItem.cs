@@ -17,15 +17,15 @@ namespace TrustEDU.Core.Base.Caching
             public TrackState State;
         }
 
-        private readonly Dictionary<TKey, Trackable> dictionary = new Dictionary<TKey, Trackable>();
+        private readonly Dictionary<TKey, Trackable> _dictionary = new Dictionary<TKey, Trackable>();
 
         public TValue this[TKey key]
         {
             get
             {
-                lock (dictionary)
+                lock (_dictionary)
                 {
-                    if (dictionary.TryGetValue(key, out Trackable trackable))
+                    if (_dictionary.TryGetValue(key, out Trackable trackable))
                     {
                         if (trackable.State == TrackState.Deleted)
                             throw new KeyNotFoundException();
@@ -38,7 +38,7 @@ namespace TrustEDU.Core.Base.Caching
                             Item = GetInternal(key),
                             State = TrackState.None
                         };
-                        dictionary.Add(key, trackable);
+                        _dictionary.Add(key, trackable);
                     }
                     return trackable.Item;
                 }
@@ -47,11 +47,11 @@ namespace TrustEDU.Core.Base.Caching
 
         public void Add(TKey key, TValue value)
         {
-            lock (dictionary)
+            lock (_dictionary)
             {
-                if (dictionary.TryGetValue(key, out Trackable trackable) && trackable.State != TrackState.Deleted)
+                if (_dictionary.TryGetValue(key, out var trackable) && trackable.State != TrackState.Deleted)
                     throw new ArgumentException();
-                dictionary[key] = new Trackable
+                _dictionary[key] = new Trackable
                 {
                     Key = key,
                     Item = value,
@@ -64,7 +64,7 @@ namespace TrustEDU.Core.Base.Caching
 
         public void Commit()
         {
-            foreach (Trackable trackable in GetChangeSet())
+            foreach (var trackable in GetChangeSet())
                 switch (trackable.State)
                 {
                     case TrackState.Added:
@@ -76,6 +76,10 @@ namespace TrustEDU.Core.Base.Caching
                     case TrackState.Deleted:
                         DeleteInternal(trackable.Key);
                         break;
+                    case TrackState.None:
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
         }
 
@@ -86,20 +90,20 @@ namespace TrustEDU.Core.Base.Caching
 
         public void Delete(TKey key)
         {
-            lock (dictionary)
+            lock (_dictionary)
             {
-                if (dictionary.TryGetValue(key, out Trackable trackable))
+                if (_dictionary.TryGetValue(key, out var trackable))
                 {
                     if (trackable.State == TrackState.Added)
-                        dictionary.Remove(key);
+                        _dictionary.Remove(key);
                     else
                         trackable.State = TrackState.Deleted;
                 }
                 else
                 {
-                    TValue item = TryGetInternal(key);
+                    var item = TryGetInternal(key);
                     if (item == null) return;
-                    dictionary.Add(key, new Trackable
+                    _dictionary.Add(key, new Trackable
                     {
                         Key = key,
                         Item = item,
@@ -113,21 +117,21 @@ namespace TrustEDU.Core.Base.Caching
 
         public void DeleteWhere(Func<TKey, TValue, bool> predicate)
         {
-            lock (dictionary)
+            lock (_dictionary)
             {
-                foreach (Trackable trackable in dictionary.Where(p => p.Value.State != TrackState.Deleted && predicate(p.Key, p.Value.Item)).Select(p => p.Value))
+                foreach (var trackable in _dictionary.Where(p => p.Value.State != TrackState.Deleted && predicate(p.Key, p.Value.Item)).Select(p => p.Value))
                     trackable.State = TrackState.Deleted;
             }
         }
 
         public IEnumerable<KeyValuePair<TKey, TValue>> Find(byte[] keyPrefix = null)
         {
-            lock (dictionary)
+            lock (_dictionary)
             {
                 foreach (var pair in FindInternal(keyPrefix ?? new byte[0]))
-                    if (!dictionary.ContainsKey(pair.Key))
+                    if (!_dictionary.ContainsKey(pair.Key))
                         yield return pair;
-                foreach (var pair in dictionary)
+                foreach (var pair in _dictionary)
                     if (pair.Value.State != TrackState.Deleted && (keyPrefix == null || pair.Key.ToArray().Take(keyPrefix.Length).SequenceEqual(keyPrefix)))
                         yield return new KeyValuePair<TKey, TValue>(pair.Key, pair.Value.Item);
             }
@@ -137,9 +141,9 @@ namespace TrustEDU.Core.Base.Caching
 
         protected internal IEnumerable<Trackable> GetChangeSet()
         {
-            lock (dictionary)
+            lock (_dictionary)
             {
-                foreach (Trackable trackable in dictionary.Values.Where(p => p.State != TrackState.None))
+                foreach (var trackable in _dictionary.Values.Where(p => p.State != TrackState.None))
                     yield return trackable;
             }
         }
@@ -148,9 +152,9 @@ namespace TrustEDU.Core.Base.Caching
 
         public TValue GetAndChange(TKey key, Func<TValue> factory = null)
         {
-            lock (dictionary)
+            lock (_dictionary)
             {
-                if (dictionary.TryGetValue(key, out Trackable trackable))
+                if (_dictionary.TryGetValue(key, out var trackable))
                 {
                     if (trackable.State == TrackState.Deleted)
                     {
@@ -180,7 +184,7 @@ namespace TrustEDU.Core.Base.Caching
                     {
                         trackable.State = TrackState.Changed;
                     }
-                    dictionary.Add(key, trackable);
+                    _dictionary.Add(key, trackable);
                 }
                 return trackable.Item;
             }
@@ -188,15 +192,13 @@ namespace TrustEDU.Core.Base.Caching
 
         public TValue GetOrAdd(TKey key, Func<TValue> factory)
         {
-            lock (dictionary)
+            lock (_dictionary)
             {
-                if (dictionary.TryGetValue(key, out Trackable trackable))
+                if (_dictionary.TryGetValue(key, out var trackable))
                 {
-                    if (trackable.State == TrackState.Deleted)
-                    {
-                        trackable.Item = factory();
-                        trackable.State = TrackState.Changed;
-                    }
+                    if (trackable.State != TrackState.Deleted) return trackable.Item;
+                    trackable.Item = factory();
+                    trackable.State = TrackState.Changed;
                 }
                 else
                 {
@@ -214,7 +216,7 @@ namespace TrustEDU.Core.Base.Caching
                     {
                         trackable.State = TrackState.None;
                     }
-                    dictionary.Add(key, trackable);
+                    _dictionary.Add(key, trackable);
                 }
                 return trackable.Item;
             }
@@ -222,16 +224,15 @@ namespace TrustEDU.Core.Base.Caching
 
         public TValue TryGet(TKey key)
         {
-            lock (dictionary)
+            lock (_dictionary)
             {
-                if (dictionary.TryGetValue(key, out Trackable trackable))
+                if (_dictionary.TryGetValue(key, out var trackable))
                 {
-                    if (trackable.State == TrackState.Deleted) return null;
-                    return trackable.Item;
+                    return trackable.State == TrackState.Deleted ? null : trackable.Item;
                 }
-                TValue value = TryGetInternal(key);
+                var value = TryGetInternal(key);
                 if (value == null) return null;
-                dictionary.Add(key, new Trackable
+                _dictionary.Add(key, new Trackable
                 {
                     Key = key,
                     Item = value,

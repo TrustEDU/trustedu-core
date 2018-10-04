@@ -14,7 +14,7 @@ namespace TrustEDU.Core.Base.Helpers
 {
     public static class CoreHelper
     {
-        private static readonly DateTime unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         private static int BitLen(int w)
         {
@@ -152,12 +152,12 @@ namespace TrustEDU.Core.Base.Helpers
 
         public static DateTime ToDateTime(this uint timestamp)
         {
-            return unixEpoch.AddSeconds(timestamp).ToLocalTime();
+            return UnixEpoch.AddSeconds(timestamp).ToLocalTime();
         }
 
         public static DateTime ToDateTime(this ulong timestamp)
         {
-            return unixEpoch.AddSeconds(timestamp).ToLocalTime();
+            return UnixEpoch.AddSeconds(timestamp).ToLocalTime();
         }
 
         public static string ToHexString(this IEnumerable<byte> value)
@@ -188,11 +188,11 @@ namespace TrustEDU.Core.Base.Helpers
 
         public static uint ToTimestamp(this DateTime time)
         {
-            return (uint)(time.ToUniversalTime() - unixEpoch).TotalSeconds;
+            return (uint)(time.ToUniversalTime() - UnixEpoch).TotalSeconds;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe internal static ushort ToUInt16(this byte[] value, int startIndex)
+        internal static unsafe ushort ToUInt16(this byte[] value, int startIndex)
         {
             fixed (byte* pbyte = &value[startIndex])
             {
@@ -201,7 +201,7 @@ namespace TrustEDU.Core.Base.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe internal static uint ToUInt32(this byte[] value, int startIndex)
+        internal static unsafe uint ToUInt32(this byte[] value, int startIndex)
         {
             fixed (byte* pbyte = &value[startIndex])
             {
@@ -210,7 +210,7 @@ namespace TrustEDU.Core.Base.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe internal static ulong ToUInt64(this byte[] value, int startIndex)
+        internal static unsafe ulong ToUInt64(this byte[] value, int startIndex)
         {
             fixed (byte* pbyte = &value[startIndex])
             {

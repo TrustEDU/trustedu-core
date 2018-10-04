@@ -24,7 +24,7 @@ namespace TrustEDU.Core.Base.Caching
 
         protected readonly ReaderWriterLockSlim RwSyncRootLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         protected readonly Dictionary<TKey, CacheItem> InnerDictionary = new Dictionary<TKey, CacheItem>();
-        private readonly int maxCapacity;
+        private readonly int _maxCapacity;
 
         public TValue this[TKey key]
         {
@@ -33,7 +33,7 @@ namespace TrustEDU.Core.Base.Caching
                 RwSyncRootLock.EnterReadLock();
                 try
                 {
-                    if (!InnerDictionary.TryGetValue(key, out CacheItem item)) throw new KeyNotFoundException();
+                    if (!InnerDictionary.TryGetValue(key, out var item)) throw new KeyNotFoundException();
                     OnAccess(item);
                     return item.Value;
                 }
@@ -60,22 +60,16 @@ namespace TrustEDU.Core.Base.Caching
             }
         }
 
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsReadOnly => false;
 
-        public Cache(int maxCapacity)
+        protected Cache(int maxCapacity)
         {
-            this.maxCapacity = maxCapacity;
+            this._maxCapacity = maxCapacity;
         }
 
         public void Add(TValue item)
         {
-            TKey key = GetKeyForItem(item);
+            var key = GetKeyForItem(item);
             RwSyncRootLock.EnterWriteLock();
             try
             {
@@ -89,17 +83,17 @@ namespace TrustEDU.Core.Base.Caching
 
         private void AddInternal(TKey key, TValue item)
         {
-            if (InnerDictionary.TryGetValue(key, out CacheItem cacheItem))
+            if (InnerDictionary.TryGetValue(key, out var cacheItem))
             {
                 OnAccess(cacheItem);
             }
             else
             {
-                if (InnerDictionary.Count >= maxCapacity)
+                if (InnerDictionary.Count >= _maxCapacity)
                 {
-                    foreach (CacheItem item_del in InnerDictionary.Values.AsParallel().OrderBy(p => p.Time).Take(InnerDictionary.Count - maxCapacity + 1))
+                    foreach (var itemDel in InnerDictionary.Values.AsParallel().OrderBy(p => p.Time).Take(InnerDictionary.Count - _maxCapacity + 1))
                     {
-                        RemoveInternal(item_del);
+                        RemoveInternal(itemDel);
                     }
                 }
                 InnerDictionary.Add(key, new CacheItem(key, item));
@@ -111,9 +105,9 @@ namespace TrustEDU.Core.Base.Caching
             RwSyncRootLock.EnterWriteLock();
             try
             {
-                foreach (TValue item in items)
+                foreach (var item in items)
                 {
-                    TKey key = GetKeyForItem(item);
+                    var key = GetKeyForItem(item);
                     AddInternal(key, item);
                 }
             }
@@ -128,9 +122,9 @@ namespace TrustEDU.Core.Base.Caching
             RwSyncRootLock.EnterWriteLock();
             try
             {
-                foreach (CacheItem item_del in InnerDictionary.Values.ToArray())
+                foreach (var itemDel in InnerDictionary.Values.ToArray())
                 {
-                    RemoveInternal(item_del);
+                    RemoveInternal(itemDel);
                 }
             }
             finally
@@ -144,7 +138,7 @@ namespace TrustEDU.Core.Base.Caching
             RwSyncRootLock.EnterReadLock();
             try
             {
-                if (!InnerDictionary.TryGetValue(key, out CacheItem cacheItem)) return false;
+                if (!InnerDictionary.TryGetValue(key, out var cacheItem)) return false;
                 OnAccess(cacheItem);
                 return true;
             }
@@ -164,7 +158,7 @@ namespace TrustEDU.Core.Base.Caching
             if (array == null) throw new ArgumentNullException();
             if (arrayIndex < 0) throw new ArgumentOutOfRangeException();
             if (arrayIndex + InnerDictionary.Count > array.Length) throw new ArgumentException();
-            foreach (TValue item in this)
+            foreach (var item in this)
             {
                 array[arrayIndex++] = item;
             }
@@ -204,7 +198,7 @@ namespace TrustEDU.Core.Base.Caching
             RwSyncRootLock.EnterWriteLock();
             try
             {
-                if (!InnerDictionary.TryGetValue(key, out CacheItem cacheItem)) return false;
+                if (!InnerDictionary.TryGetValue(key, out var cacheItem)) return false;
                 RemoveInternal(cacheItem);
                 return true;
             }
@@ -235,7 +229,7 @@ namespace TrustEDU.Core.Base.Caching
             RwSyncRootLock.EnterReadLock();
             try
             {
-                if (InnerDictionary.TryGetValue(key, out CacheItem cacheItem))
+                if (InnerDictionary.TryGetValue(key, out var cacheItem))
                 {
                     OnAccess(cacheItem);
                     item = cacheItem.Value;

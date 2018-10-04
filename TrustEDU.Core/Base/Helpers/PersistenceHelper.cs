@@ -71,9 +71,9 @@ namespace TrustEDU.Core.Base.Helpers
 
         public static long GetSysFeeAmount(this IPersistence persistence, UInt256 hash)
         {
-            BlockState block_state = persistence.Blocks.TryGet(hash);
-            if (block_state == null) return 0;
-            return block_state.SystemFeeAmount;
+            BlockState blockState = persistence.Blocks.TryGet(hash);
+            if (blockState == null) return 0;
+            return blockState.SystemFeeAmount;
         }
 
         public static Transaction GetTransaction(this IPersistence persistence, UInt256 hash)

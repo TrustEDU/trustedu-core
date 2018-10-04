@@ -38,19 +38,19 @@ namespace TrustEDU.Core.Persistence.LevelDB
             this.snapshot = db.GetSnapshot();
             this.batch = new WriteBatch();
             ReadOptions options = new ReadOptions { FillCache = false, Snapshot = snapshot };
-            Blocks = new DbCache<UInt256, BlockState>(db, options, batch, Prefixes.DATA_Block);
-            Transactions = new DbCache<UInt256, TransactionState>(db, options, batch, Prefixes.DATA_Transaction);
-            Accounts = new DbCache<UInt160, AccountState>(db, options, batch, Prefixes.ST_Account);
-            UnspentCoins = new DbCache<UInt256, UnspentCoinState>(db, options, batch, Prefixes.ST_Coin);
-            SpentCoins = new DbCache<UInt256, SpentCoinState>(db, options, batch, Prefixes.ST_SpentCoin);
-            Validators = new DbCache<ECPoint, ValidatorState>(db, options, batch, Prefixes.ST_Validator);
-            Assets = new DbCache<UInt256, AssetState>(db, options, batch, Prefixes.ST_Asset);
-            Contracts = new DbCache<UInt160, ContractState>(db, options, batch, Prefixes.ST_Contract);
-            Storages = new DbCache<StorageKey, StorageItem>(db, options, batch, Prefixes.ST_Storage);
-            HeaderHashList = new DbCache<UInt32Wrapper, HeaderHashList>(db, options, batch, Prefixes.IX_HeaderHashList);
-            ValidatorsCount = new DbMetaDataCache<ValidatorsCountState>(db, options, batch, Prefixes.IX_ValidatorsCount);
-            BlockHashIndex = new DbMetaDataCache<HashIndexState>(db, options, batch, Prefixes.IX_CurrentBlock);
-            HeaderHashIndex = new DbMetaDataCache<HashIndexState>(db, options, batch, Prefixes.IX_CurrentHeader);
+            Blocks = new DbCache<UInt256, BlockState>(db, options, batch, Prefixes.DataBlock);
+            Transactions = new DbCache<UInt256, TransactionState>(db, options, batch, Prefixes.DataTransaction);
+            Accounts = new DbCache<UInt160, AccountState>(db, options, batch, Prefixes.StorageAccount);
+            UnspentCoins = new DbCache<UInt256, UnspentCoinState>(db, options, batch, Prefixes.StorageCoin);
+            SpentCoins = new DbCache<UInt256, SpentCoinState>(db, options, batch, Prefixes.StorageSpentCoin);
+            Validators = new DbCache<ECPoint, ValidatorState>(db, options, batch, Prefixes.StorageValidator);
+            Assets = new DbCache<UInt256, AssetState>(db, options, batch, Prefixes.StorageAsset);
+            Contracts = new DbCache<UInt160, ContractState>(db, options, batch, Prefixes.StorageContract);
+            Storages = new DbCache<StorageKey, StorageItem>(db, options, batch, Prefixes.StorageCommon);
+            HeaderHashList = new DbCache<UInt32Wrapper, HeaderHashList>(db, options, batch, Prefixes.IndexHeaderHashList);
+            ValidatorsCount = new DbMetaDataCache<ValidatorsCountState>(db, options, batch, Prefixes.IndexValidatorsCount);
+            BlockHashIndex = new DbMetaDataCache<HashIndexState>(db, options, batch, Prefixes.IndexCurrentBlock);
+            HeaderHashIndex = new DbMetaDataCache<HashIndexState>(db, options, batch, Prefixes.IndexCurrentHeader);
         }
 
         public override void Commit()

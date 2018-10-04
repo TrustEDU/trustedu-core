@@ -130,7 +130,7 @@ namespace TrustEDU.Core.Network.Peer2Peer
         private void OnRelay(IInventory inventory)
         {
             if (Version?.Relay != true) return;
-            if (inventory.InventoryType == InventoryType.TX)
+            if (inventory.InventoryType == InventoryType.Tx)
             {
                 if (bloom_filter != null && !bloom_filter.Test((Transaction)inventory))
                     return;
@@ -141,7 +141,7 @@ namespace TrustEDU.Core.Network.Peer2Peer
         private void OnSend(IInventory inventory)
         {
             if (Version?.Relay != true) return;
-            if (inventory.InventoryType == InventoryType.TX)
+            if (inventory.InventoryType == InventoryType.Tx)
             {
                 if (bloom_filter != null && !bloom_filter.Test((Transaction)inventory))
                     return;

@@ -8,16 +8,16 @@ namespace TrustEDU.Core.Cryptography
 {
     public class MerkleTree
     {
-        private MerkleTreeNode root;
+        private readonly MerkleTreeNode _root;
 
         public int Depth { get; private set; }
 
         internal MerkleTree(UInt256[] hashes)
         {
             if (hashes.Length == 0) throw new ArgumentException();
-            this.root = Build(hashes.Select(p => new MerkleTreeNode { Hash = p }).ToArray());
+            this._root = Build(hashes.Select(p => new MerkleTreeNode { Hash = p }).ToArray());
             int depth = 1;
-            for (MerkleTreeNode i = root; i.LeftChild != null; i = i.LeftChild)
+            for (MerkleTreeNode i = _root; i.LeftChild != null; i = i.LeftChild)
                 depth++;
             this.Depth = depth;
         }
@@ -51,7 +51,7 @@ namespace TrustEDU.Core.Cryptography
             if (hashes.Length == 0) throw new ArgumentException();
             if (hashes.Length == 1) return hashes[0];
             MerkleTree tree = new MerkleTree(hashes);
-            return tree.root.Hash;
+            return tree._root.Hash;
         }
 
         private static void DepthFirstSearch(MerkleTreeNode node, IList<UInt256> hashes)
@@ -72,7 +72,7 @@ namespace TrustEDU.Core.Cryptography
         public UInt256[] ToHashArray()
         {
             List<UInt256> hashes = new List<UInt256>();
-            DepthFirstSearch(root, hashes);
+            DepthFirstSearch(_root, hashes);
             return hashes.ToArray();
         }
 
@@ -80,7 +80,7 @@ namespace TrustEDU.Core.Cryptography
         {
             flags = new BitArray(flags);
             flags.Length = 1 << (Depth - 1);
-            Trim(root, 0, Depth, flags);
+            Trim(_root, 0, Depth, flags);
         }
 
         private static void Trim(MerkleTreeNode node, int index, int depth, BitArray flags)

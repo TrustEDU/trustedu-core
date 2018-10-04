@@ -10,18 +10,18 @@ namespace TrustEDU.Core.Models.Actors
 {
     internal class PriorityMessageQueue : IMessageQueue, IUnboundedMessageQueueSemantics
     {
-        private readonly ConcurrentQueue<Envelope> high = new ConcurrentQueue<Envelope>();
-        private readonly ConcurrentQueue<Envelope> low = new ConcurrentQueue<Envelope>();
-        private readonly Func<object, IEnumerable, bool> dropper;
-        private readonly Func<object, bool> priority_generator;
+        private readonly ConcurrentQueue<Envelope> _high = new ConcurrentQueue<Envelope>();
+        private readonly ConcurrentQueue<Envelope> _low = new ConcurrentQueue<Envelope>();
+        private readonly Func<object, IEnumerable, bool> _dropper;
+        private readonly Func<object, bool> _priorityGenerator;
 
-        public bool HasMessages => !high.IsEmpty || !low.IsEmpty;
-        public int Count => high.Count + low.Count;
+        public bool HasMessages => !_high.IsEmpty || !_low.IsEmpty;
+        public int Count => _high.Count + _low.Count;
 
-        public PriorityMessageQueue(Func<object, IEnumerable, bool> dropper, Func<object, bool> priority_generator)
+        public PriorityMessageQueue(Func<object, IEnumerable, bool> dropper, Func<object, bool> priorityGenerator)
         {
-            this.dropper = dropper;
-            this.priority_generator = priority_generator;
+            this._dropper = dropper;
+            this._priorityGenerator = priorityGenerator;
         }
 
         public void CleanUp(IActorRef owner, IMessageQueue deadletters)
@@ -30,16 +30,16 @@ namespace TrustEDU.Core.Models.Actors
 
         public void Enqueue(IActorRef receiver, Envelope envelope)
         {
-            if (dropper(envelope.Message, high.Concat(low).Select(p => p.Message)))
+            if (_dropper(envelope.Message, _high.Concat(_low).Select(p => p.Message)))
                 return;
-            ConcurrentQueue<Envelope> queue = priority_generator(envelope.Message) ? high : low;
+            ConcurrentQueue<Envelope> queue = _priorityGenerator(envelope.Message) ? _high : _low;
             queue.Enqueue(envelope);
         }
 
         public bool TryDequeue(out Envelope envelope)
         {
-            if (high.TryDequeue(out envelope)) return true;
-            return low.TryDequeue(out envelope);
+            if (_high.TryDequeue(out envelope)) return true;
+            return _low.TryDequeue(out envelope);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace TrustEDU.Core.Base.Types
     public abstract class SerializableWrapper<T> : IEquatable<T>, IEquatable<SerializableWrapper<T>>, ISerializable
         where T : struct, IEquatable<T>
     {
-        protected T value;
+        protected T Value;
 
         public abstract int Size { get; }
 
@@ -15,12 +15,12 @@ namespace TrustEDU.Core.Base.Types
 
         public bool Equals(T other)
         {
-            return value.Equals(other);
+            return Value.Equals(other);
         }
 
         public bool Equals(SerializableWrapper<T> other)
         {
-            return value.Equals(other.value);
+            return other != null && Value.Equals(other.Value);
         }
 
         public abstract void Serialize(BinaryWriter writer);

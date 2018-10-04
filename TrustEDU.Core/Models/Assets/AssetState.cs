@@ -97,26 +97,26 @@ namespace TrustEDU.Core.Models.Assets
             if (AssetType == AssetType.UtilityToken) return "TGAS";
             if (_names == null)
             {
-                JObject name_obj;
+                JObject nameObj;
                 try
                 {
-                    name_obj = JObject.Parse(Name);
+                    nameObj = JObject.Parse(Name);
                 }
                 catch (FormatException)
                 {
-                    name_obj = Name;
+                    nameObj = Name;
                 }
-                if (name_obj is JString)
-                    _names = new Dictionary<CultureInfo, string> { { new CultureInfo("en"), name_obj.AsString() } };
+                if (nameObj is JString)
+                    _names = new Dictionary<CultureInfo, string> { { new CultureInfo("en"), nameObj.AsString() } };
                 else
-                    _names = ((JArray)name_obj).Where(p => p.ContainsProperty("lang") && p.ContainsProperty("name")).ToDictionary(p => new CultureInfo(p["lang"].AsString()), p => p["name"].AsString());
+                    _names = ((JArray)nameObj).Where(p => p.ContainsProperty("lang") && p.ContainsProperty("name")).ToDictionary(p => new CultureInfo(p["lang"].AsString()), p => p["name"].AsString());
             }
             if (culture == null) culture = CultureInfo.CurrentCulture;
             if (_names.TryGetValue(culture, out string name))
             {
                 return name;
             }
-            else if (_names.TryGetValue(en, out name))
+            else if (_names.TryGetValue(En, out name))
             {
                 return name;
             }
@@ -126,7 +126,7 @@ namespace TrustEDU.Core.Models.Assets
             }
         }
 
-        private static readonly CultureInfo en = new CultureInfo("en");
+        private static readonly CultureInfo En = new CultureInfo("en");
 
         public override void Serialize(BinaryWriter writer)
         {

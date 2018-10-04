@@ -34,7 +34,7 @@ namespace TrustEDU.Core.Base.Json
         internal static JBoolean Parse(TextReader reader)
         {
             SkipSpace(reader);
-            char firstChar = (char)reader.Read();
+            var firstChar = (char)reader.Read();
             if (firstChar == 't')
             {
                 int c2 = reader.Read();

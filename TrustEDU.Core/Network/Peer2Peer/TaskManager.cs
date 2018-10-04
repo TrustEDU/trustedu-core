@@ -48,7 +48,7 @@ namespace TrustEDU.Core.Network.Peer2Peer
         {
             if (!sessions.TryGetValue(Sender, out TaskSession session))
                 return;
-            if (payload.Type == InventoryType.TX && Blockchain.Singleton.Height < Blockchain.Singleton.HeaderHeight)
+            if (payload.Type == InventoryType.Tx && Blockchain.Singleton.Height < Blockchain.Singleton.HeaderHeight)
             {
                 RequestTasks(session);
                 return;

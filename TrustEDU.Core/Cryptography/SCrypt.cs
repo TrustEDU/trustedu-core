@@ -5,7 +5,7 @@ namespace TrustEDU.Core.Cryptography
 {
     public static class SCrypt
     {
-        private unsafe static void BulkCopy(void* dst, void* src, int len)
+        private static unsafe void BulkCopy(void* dst, void* src, int len)
         {
             var d = (byte*)dst;
             var s = (byte*)src;
@@ -38,7 +38,7 @@ namespace TrustEDU.Core.Cryptography
             }
         }
 
-        private unsafe static void BulkXor(void* dst, void* src, int len)
+        private static unsafe void BulkXor(void* dst, void* src, int len)
         {
             var d = (byte*)dst;
             var s = (byte*)src;
@@ -70,7 +70,7 @@ namespace TrustEDU.Core.Cryptography
             }
         }
 
-        private unsafe static void Encode32(byte* p, uint x)
+        private static unsafe void Encode32(byte* p, uint x)
         {
             p[0] = (byte)(x & 0xff);
             p[1] = (byte)((x >> 8) & 0xff);
@@ -78,7 +78,7 @@ namespace TrustEDU.Core.Cryptography
             p[3] = (byte)((x >> 24) & 0xff);
         }
 
-        private unsafe static uint Decode32(byte* p)
+        private static unsafe uint Decode32(byte* p)
         {
             return
                 ((uint)(p[0]) +
@@ -87,7 +87,7 @@ namespace TrustEDU.Core.Cryptography
                 ((uint)(p[3]) << 24));
         }
 
-        private unsafe static void Salsa208(uint* B)
+        private static unsafe void Salsa208(uint* B)
         {
             uint x0 = B[0];
             uint x1 = B[1];
@@ -154,12 +154,12 @@ namespace TrustEDU.Core.Cryptography
             B[15] += x15;
         }
 
-        private unsafe static uint R(uint a, int b)
+        private static unsafe uint R(uint a, int b)
         {
             return (a << b) | (a >> (32 - b));
         }
 
-        private unsafe static void BlockMix(uint* Bin, uint* Bout, uint* X, int r)
+        private static unsafe void BlockMix(uint* Bin, uint* Bout, uint* X, int r)
         {
             /* 1: X <-- B_{2r - 1} */
             BulkCopy(X, &Bin[(2 * r - 1) * 16], 64);
@@ -185,14 +185,14 @@ namespace TrustEDU.Core.Cryptography
             }
         }
 
-        private unsafe static long Integerify(uint* B, int r)
+        private static unsafe long Integerify(uint* B, int r)
         {
             var X = (uint*)(((byte*)B) + (2 * r - 1) * 64);
 
             return (((long)(X[1]) << 32) + X[0]);
         }
 
-        private unsafe static void SMix(byte* B, int r, int N, uint* V, uint* XY)
+        private static unsafe void SMix(byte* B, int r, int N, uint* V, uint* XY)
         {
             var X = XY;
             var Y = &XY[32 * r];
@@ -251,7 +251,7 @@ namespace TrustEDU.Core.Cryptography
             return Replicon.Cryptography.SCrypt.SCrypt.DeriveKey(password, salt, (ulong)N, (uint)r, (uint)p, (uint)derivedKeyLength);
         }
 #else
-        public unsafe static byte[] DeriveKey(byte[] password, byte[] salt, int N, int r, int p, int derivedKeyLength)
+        public static unsafe byte[] DeriveKey(byte[] password, byte[] salt, int N, int r, int p, int derivedKeyLength)
         {
             var Ba = new byte[128 * r * p + 63];
             var XYa = new byte[256 * r + 63];

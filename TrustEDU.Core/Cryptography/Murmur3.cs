@@ -14,21 +14,21 @@ namespace TrustEDU.Core.Cryptography
         private const uint m = 5;
         private const uint n = 0xe6546b64;
 
-        private readonly uint seed;
-        private uint hash;
-        private int length;
+        private readonly uint _seed;
+        private uint _hash;
+        private int _length;
 
         public override int HashSize => 32;
 
         public Murmur3(uint seed)
         {
-            this.seed = seed;
+            this._seed = seed;
             Initialize();
         }
 
         protected override void HashCore(byte[] array, int ibStart, int cbSize)
         {
-            length += cbSize;
+            _length += cbSize;
             int remainder = cbSize & 3;
             int alignedLength = ibStart + (cbSize - remainder);
             for (int i = ibStart; i < alignedLength; i += 4)
@@ -37,9 +37,9 @@ namespace TrustEDU.Core.Cryptography
                 k *= c1;
                 k = RotateLeft(k, r1);
                 k *= c2;
-                hash ^= k;
-                hash = RotateLeft(hash, r2);
-                hash = hash * m + n;
+                _hash ^= k;
+                _hash = RotateLeft(_hash, r2);
+                _hash = _hash * m + n;
             }
             if (remainder > 0)
             {
@@ -53,25 +53,25 @@ namespace TrustEDU.Core.Cryptography
                 remainingBytes *= c1;
                 remainingBytes = RotateLeft(remainingBytes, r1);
                 remainingBytes *= c2;
-                hash ^= remainingBytes;
+                _hash ^= remainingBytes;
             }
         }
 
         protected override byte[] HashFinal()
         {
-            hash ^= (uint)length;
-            hash ^= hash >> 16;
-            hash *= 0x85ebca6b;
-            hash ^= hash >> 13;
-            hash *= 0xc2b2ae35;
-            hash ^= hash >> 16;
-            return BitConverter.GetBytes(hash);
+            _hash ^= (uint)_length;
+            _hash ^= _hash >> 16;
+            _hash *= 0x85ebca6b;
+            _hash ^= _hash >> 13;
+            _hash *= 0xc2b2ae35;
+            _hash ^= _hash >> 16;
+            return BitConverter.GetBytes(_hash);
         }
 
         public override void Initialize()
         {
-            hash = seed;
-            length = 0;
+            _hash = _seed;
+            _length = 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

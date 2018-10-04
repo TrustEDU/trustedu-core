@@ -178,7 +178,7 @@ namespace TrustEDU.Core.Network.Peer2Peer
                 Blockchain.Singleton.RelayCache.TryGet(hash, out IInventory inventory);
                 switch (payload.Type)
                 {
-                    case InventoryType.TX:
+                    case InventoryType.Tx:
                         if (inventory == null)
                             inventory = Blockchain.Singleton.GetTransaction(hash);
                         if (inventory is Transaction)
@@ -252,7 +252,7 @@ namespace TrustEDU.Core.Network.Peer2Peer
                     using (Snapshot snapshot = Blockchain.Singleton.GetSnapshot())
                         hashes = hashes.Where(p => !snapshot.ContainsBlock(p)).ToArray();
                     break;
-                case InventoryType.TX:
+                case InventoryType.Tx:
                     using (Snapshot snapshot = Blockchain.Singleton.GetSnapshot())
                         hashes = hashes.Where(p => !snapshot.ContainsTransaction(p)).ToArray();
                     break;
@@ -263,7 +263,7 @@ namespace TrustEDU.Core.Network.Peer2Peer
 
         private void OnMemPoolMessageReceived()
         {
-            foreach (InvPayload payload in InvPayload.CreateGroup(InventoryType.TX, Blockchain.Singleton.GetMemoryPool().Select(p => p.Hash).ToArray()))
+            foreach (InvPayload payload in InvPayload.CreateGroup(InventoryType.Tx, Blockchain.Singleton.GetMemoryPool().Select(p => p.Hash).ToArray()))
                 Context.Parent.Tell(Message.Create("inv", payload));
         }
 

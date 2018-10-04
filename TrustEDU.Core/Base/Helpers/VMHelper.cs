@@ -85,7 +85,10 @@ namespace TrustEDU.Core.Base.Helpers
                     if (parameter.Value is BigInteger bi)
                         sb.EmitPush(bi);
                     else
-                        sb.EmitPush((BigInteger)typeof(BigInteger).GetConstructor(new[] { parameter.Value.GetType() }).Invoke(new[] { parameter.Value }));
+                        sb.EmitPush((BigInteger) typeof(BigInteger)
+                            .GetConstructor(new[] {parameter.Value.GetType()})
+                            ?.Invoke(new[] {parameter.Value})
+                        );
                     break;
                 case ContractParameterType.Hash160:
                     sb.EmitPush((UInt160)parameter.Value);

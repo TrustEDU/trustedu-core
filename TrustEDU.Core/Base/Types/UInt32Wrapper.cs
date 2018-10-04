@@ -13,22 +13,22 @@ namespace TrustEDU.Core.Base.Types
 
         private UInt32Wrapper(uint value)
         {
-            this.value = value;
+            this.Value = value;
         }
 
         public override void Deserialize(BinaryReader reader)
         {
-            value = reader.ReadUInt32();
+            Value = reader.ReadUInt32();
         }
 
         public bool Equals(UInt32Wrapper other)
         {
-            return value == other.value;
+            return other != null && Value == other.Value;
         }
 
         public override void Serialize(BinaryWriter writer)
         {
-            writer.Write(value);
+            writer.Write(Value);
         }
 
         public static implicit operator UInt32Wrapper(uint value)
@@ -38,7 +38,7 @@ namespace TrustEDU.Core.Base.Types
 
         public static implicit operator uint(UInt32Wrapper wrapper)
         {
-            return wrapper.value;
+            return wrapper.Value;
         }
     }
 }

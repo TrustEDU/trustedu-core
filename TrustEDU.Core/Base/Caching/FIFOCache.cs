@@ -2,7 +2,7 @@
 {
     internal abstract class FIFOCache<TKey, TValue> : Cache<TKey, TValue>
     {
-        public FIFOCache(int maxCapacity)
+        protected FIFOCache(int maxCapacity)
             : base(maxCapacity)
         {
         }

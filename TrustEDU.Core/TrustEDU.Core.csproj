@@ -34,7 +34,6 @@
     <Folder Include="Base\Caching\" />
     <Folder Include="Network\Peer2Peer\" />
     <Folder Include="Base\Helpers\" />
-    <Folder Include="Persistence\" />
     <Folder Include="Models\" />
     <Folder Include="Models\Exceptions\" />
     <Folder Include="Models\Assets\" />

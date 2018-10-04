@@ -5,7 +5,7 @@ namespace TrustEDU.Core.Base.Caching
     internal class CloneMetaCache<T> : MetaDataCache<T>
         where T : class, ICloneable<T>, ISerializable, new()
     {
-        private MetaDataCache<T> innerCache;
+        private readonly MetaDataCache<T> innerCache;
 
         public CloneMetaCache(MetaDataCache<T> innerCache)
             : base(null)

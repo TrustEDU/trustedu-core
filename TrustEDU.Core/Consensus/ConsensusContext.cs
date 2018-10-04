@@ -34,18 +34,18 @@ namespace TrustEDU.Core.Consensus
 
         public int M => Validators.Length - (Validators.Length - 1) / 3;
 
-        public void ChangeView(byte view_number)
+        public void ChangeView(byte viewNumber)
         {
             State &= ConsensusState.SignatureSent;
-            ViewNumber = view_number;
-            PrimaryIndex = GetPrimaryIndex(view_number);
+            ViewNumber = viewNumber;
+            PrimaryIndex = GetPrimaryIndex(viewNumber);
             if (State == ConsensusState.Initial)
             {
                 TransactionHashes = null;
                 Signatures = new byte[Validators.Length][];
             }
             if (MyIndex >= 0)
-                ExpectedView[MyIndex] = view_number;
+                ExpectedView[MyIndex] = viewNumber;
             _header = null;
         }
 
@@ -54,9 +54,9 @@ namespace TrustEDU.Core.Consensus
             Snapshot?.Dispose();
         }
 
-        public uint GetPrimaryIndex(byte view_number)
+        public uint GetPrimaryIndex(byte viewNumber)
         {
-            int p = ((int)BlockIndex - view_number) % Validators.Length;
+            int p = ((int)BlockIndex - viewNumber) % Validators.Length;
             return p >= 0 ? (uint)p : (uint)(p + Validators.Length);
         }
 

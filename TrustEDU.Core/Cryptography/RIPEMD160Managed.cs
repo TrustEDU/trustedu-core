@@ -1013,7 +1013,7 @@ namespace TrustEDU.Core.Cryptography
         }
 
         [SecurityCritical]  // auto-generated
-        private unsafe static void DWORDFromLittleEndian(uint* x, int digits, byte* block)
+        private static unsafe void DWORDFromLittleEndian(uint* x, int digits, byte* block)
         {
             int i;
             int j;

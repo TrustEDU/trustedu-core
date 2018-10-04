@@ -53,31 +53,31 @@ namespace TrustEDU.Core.Base.Helpers
 
         internal static int GetVarSize<T>(this T[] value)
         {
-            int value_size;
+            int valueSize;
             Type t = typeof(T);
             if (typeof(ISerializable).IsAssignableFrom(t))
             {
-                value_size = value.OfType<ISerializable>().Sum(p => p.Size);
+                valueSize = value.OfType<ISerializable>().Sum(p => p.Size);
             }
             else if (t.GetTypeInfo().IsEnum)
             {
-                int element_size;
+                int elementSize;
                 Type u = t.GetTypeInfo().GetEnumUnderlyingType();
                 if (u == typeof(sbyte) || u == typeof(byte))
-                    element_size = 1;
+                    elementSize = 1;
                 else if (u == typeof(short) || u == typeof(ushort))
-                    element_size = 2;
+                    elementSize = 2;
                 else if (u == typeof(int) || u == typeof(uint))
-                    element_size = 4;
+                    elementSize = 4;
                 else //if (u == typeof(long) || u == typeof(ulong))
-                    element_size = 8;
-                value_size = value.Length * element_size;
+                    elementSize = 8;
+                valueSize = value.Length * elementSize;
             }
             else
             {
-                value_size = value.Length * Marshal.SizeOf<T>();
+                valueSize = value.Length * Marshal.SizeOf<T>();
             }
-            return GetVarSize(value.Length) + value_size;
+            return GetVarSize(value.Length) + valueSize;
         }
 
         internal static int GetVarSize(this string value)
@@ -88,17 +88,17 @@ namespace TrustEDU.Core.Base.Helpers
 
         public static byte[] ReadBytesWithGrouping(this BinaryReader reader)
         {
-            const int GROUP_SIZE = 16;
+            const int groupSize = 16;
             using (MemoryStream ms = new MemoryStream())
             {
                 int padding = 0;
                 do
                 {
-                    byte[] group = reader.ReadBytes(GROUP_SIZE);
+                    byte[] group = reader.ReadBytes(groupSize);
                     padding = reader.ReadByte();
-                    if (padding > GROUP_SIZE)
+                    if (padding > groupSize)
                         throw new FormatException();
-                    int count = GROUP_SIZE - padding;
+                    int count = groupSize - padding;
                     if (count > 0)
                         ms.Write(group, 0, count);
                 } while (padding == 0);
@@ -194,19 +194,19 @@ namespace TrustEDU.Core.Base.Helpers
 
         public static void WriteBytesWithGrouping(this BinaryWriter writer, byte[] value)
         {
-            const int GROUP_SIZE = 16;
+            const int groupSize = 16;
             int index = 0;
             int remain = value.Length;
-            while (remain >= GROUP_SIZE)
+            while (remain >= groupSize)
             {
-                writer.Write(value, index, GROUP_SIZE);
+                writer.Write(value, index, groupSize);
                 writer.Write((byte)0);
-                index += GROUP_SIZE;
-                remain -= GROUP_SIZE;
+                index += groupSize;
+                remain -= groupSize;
             }
             if (remain > 0)
                 writer.Write(value, index, remain);
-            int padding = GROUP_SIZE - remain;
+            int padding = groupSize - remain;
             for (int i = 0; i < padding; i++)
                 writer.Write((byte)0);
             writer.Write((byte)padding);

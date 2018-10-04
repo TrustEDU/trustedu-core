@@ -8,42 +8,44 @@ namespace TrustEDU.Core.Base.Caching
         where TKey : IEquatable<TKey>, ISerializable
         where TValue : class, ICloneable<TValue>, ISerializable, new()
     {
-        private readonly CacheItem<TKey, TValue> innerCache;
+        private readonly CacheItem<TKey, TValue> _innerCache;
 
         public CloneCache(CacheItem<TKey, TValue> innerCache)
         {
-            this.innerCache = innerCache;
+            this._innerCache = innerCache;
         }
 
         protected override void AddInternal(TKey key, TValue value)
         {
-            innerCache.Add(key, value);
+            _innerCache.Add(key, value);
         }
 
         public override void DeleteInternal(TKey key)
         {
-            innerCache.Delete(key);
+            _innerCache.Delete(key);
         }
 
-        protected override IEnumerable<KeyValuePair<TKey, TValue>> FindInternal(byte[] key_prefix)
+        protected override IEnumerable<KeyValuePair<TKey, TValue>> FindInternal(byte[] keyPrefix)
         {
-            foreach (KeyValuePair<TKey, TValue> pair in innerCache.Find(key_prefix))
+            foreach (var pair in _innerCache.Find(keyPrefix))
+            {
                 yield return new KeyValuePair<TKey, TValue>(pair.Key, pair.Value.Clone());
+            }  
         }
 
         protected override TValue GetInternal(TKey key)
         {
-            return innerCache[key].Clone();
+            return _innerCache[key].Clone();
         }
 
         protected override TValue TryGetInternal(TKey key)
         {
-            return innerCache.TryGet(key)?.Clone();
+            return _innerCache.TryGet(key)?.Clone();
         }
 
         protected override void UpdateInternal(TKey key, TValue value)
         {
-            innerCache.GetAndChange(key).FromReplica(value);
+            _innerCache.GetAndChange(key).FromReplica(value);
         }
     }
 }

@@ -8,15 +8,15 @@ namespace TrustEDU.Core.Base.Types
 {
     public class UIntBase : IEquatable<UIntBase>, ISerializable
     {
-        private readonly byte[] dataInBytes;
+        private readonly byte[] _dataInBytes;
 
-        public int Size => dataInBytes.Length;
+        public int Size => _dataInBytes.Length;
 
         protected UIntBase(int bytes, byte[] value)
         {
             if (value == null)
             {
-                this.dataInBytes = new byte[bytes];
+                this._dataInBytes = new byte[bytes];
                 return;
             }
             if (value.Length != bytes)
@@ -24,12 +24,12 @@ namespace TrustEDU.Core.Base.Types
                 throw new ArgumentException();
             }
 
-            this.dataInBytes = value;
+            this._dataInBytes = value;
         }
 
         void ISerializable.Deserialize(BinaryReader reader)
         {
-            reader.Read(dataInBytes, 0, dataInBytes.Length);
+            reader.Read(_dataInBytes, 0, _dataInBytes.Length);
         }
 
         public bool Equals(UIntBase other)
@@ -38,9 +38,9 @@ namespace TrustEDU.Core.Base.Types
                 return false;
             if (ReferenceEquals(this, other))
                 return true;
-            if (dataInBytes.Length != other.dataInBytes.Length)
+            if (_dataInBytes.Length != other._dataInBytes.Length)
                 return false;
-            return dataInBytes.SequenceEqual(other.dataInBytes);
+            return _dataInBytes.SequenceEqual(other._dataInBytes);
         }
 
         public override bool Equals(object obj)
@@ -54,7 +54,7 @@ namespace TrustEDU.Core.Base.Types
 
         public override int GetHashCode()
         {
-            return dataInBytes.ToInt32(0);
+            return _dataInBytes.ToInt32(0);
         }
 
         public static UIntBase Parse(string s)
@@ -69,17 +69,17 @@ namespace TrustEDU.Core.Base.Types
 
         void ISerializable.Serialize(BinaryWriter writer)
         {
-            writer.Write(dataInBytes);
+            writer.Write(_dataInBytes);
         }
 
         public byte[] ToArray()
         {
-            return dataInBytes;
+            return _dataInBytes;
         }
 
         public override string ToString()
         {
-            return "0x" + dataInBytes.Reverse().ToHexString();
+            return "0x" + _dataInBytes.Reverse().ToHexString();
         }
 
         public static bool TryParse<T>(string s, out T result) where T : UIntBase

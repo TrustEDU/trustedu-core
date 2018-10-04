@@ -8,22 +8,22 @@ namespace TrustEDU.Core.Base.Json
     public class JObject
     {
         public static readonly JObject Null = null;
-        private Dictionary<string, JObject> properties = new Dictionary<string, JObject>();
+        private readonly Dictionary<string, JObject> _properties = new Dictionary<string, JObject>();
 
         public JObject this[string name]
         {
             get
             {
-                properties.TryGetValue(name, out JObject value);
+                _properties.TryGetValue(name, out JObject value);
                 return value;
             }
             set
             {
-                properties[name] = value;
+                _properties[name] = value;
             }
         }
 
-        public IReadOnlyDictionary<string, JObject> Properties => properties;
+        public IReadOnlyDictionary<string, JObject> Properties => _properties;
 
         public virtual bool AsBoolean()
         {
@@ -72,7 +72,7 @@ namespace TrustEDU.Core.Base.Json
 
         public bool ContainsProperty(string key)
         {
-            return properties.ContainsKey(key);
+            return _properties.ContainsKey(key);
         }
 
         public static JObject Parse(TextReader reader, int maxNest = 100)
@@ -111,7 +111,7 @@ namespace TrustEDU.Core.Base.Json
                 SkipSpace(reader);
                 if (reader.Read() != ':') throw new FormatException();
                 JObject value = Parse(reader, maxNest - 1);
-                obj.properties.Add(name, value);
+                obj._properties.Add(name, value);
                 SkipSpace(reader);
             }
             reader.Read();
@@ -154,7 +154,7 @@ namespace TrustEDU.Core.Base.Json
         {
             StringBuilder sb = new StringBuilder();
             sb.Append('{');
-            foreach (KeyValuePair<string, JObject> pair in properties)
+            foreach (KeyValuePair<string, JObject> pair in _properties)
             {
                 sb.Append('"');
                 sb.Append(pair.Key);
@@ -170,7 +170,7 @@ namespace TrustEDU.Core.Base.Json
                 }
                 sb.Append(',');
             }
-            if (properties.Count == 0)
+            if (_properties.Count == 0)
             {
                 sb.Append('}');
             }

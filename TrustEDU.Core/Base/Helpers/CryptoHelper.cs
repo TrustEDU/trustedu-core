@@ -13,12 +13,12 @@ namespace TrustEDU.Core.Base.Helpers
 {
     public static class CryptoHelper
     {
-        private static ThreadLocal<SHA256> _sha256 = new ThreadLocal<SHA256>(() => SHA256.Create());
-        private static ThreadLocal<RIPEMD160Managed> _ripemd160 = new ThreadLocal<RIPEMD160Managed>(() => new RIPEMD160Managed());
+        private static readonly ThreadLocal<SHA256> _sha256 = new ThreadLocal<SHA256>(SHA256.Create);
+        private static readonly ThreadLocal<RIPEMD160Managed> Ripemd160 = new ThreadLocal<RIPEMD160Managed>(() => new RIPEMD160Managed());
 
         internal static byte[] AES256Decrypt(this byte[] block, byte[] key)
         {
-            using (Aes aes = Aes.Create())
+            using (var aes = Aes.Create())
             {
                 aes.Key = key;
                 aes.Mode = CipherMode.ECB;
@@ -93,7 +93,7 @@ namespace TrustEDU.Core.Base.Helpers
 
         public static byte[] RIPEMD160(this IEnumerable<byte> value)
         {
-            return _ripemd160.Value.ComputeHash(value.ToArray());
+            return Ripemd160.Value.ComputeHash(value.ToArray());
         }
 
         public static uint Murmur32(this IEnumerable<byte> value, uint seed)

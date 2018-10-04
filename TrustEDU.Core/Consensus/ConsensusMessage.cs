@@ -10,7 +10,7 @@ namespace TrustEDU.Core.Consensus
         /// <summary>
         /// Reflection cache for ConsensusMessageType
         /// </summary>
-        private static ReflectionCache<byte> ReflectionCache = ReflectionCache<byte>.CreateFromEnum<ConsensusMessageType>();
+        private static readonly ReflectionCache<byte> ReflectionCache = ReflectionCache<byte>.CreateFromEnum<ConsensusMessageType>();
 
         public readonly ConsensusMessageType Type;
         public byte ViewNumber;

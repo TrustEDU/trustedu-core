@@ -6,9 +6,9 @@ namespace TrustEDU.Core.Base.Caching
     public abstract class MetaDataCache<T>
         where T : class, ICloneable<T>, ISerializable, new()
     {
-        private T Item;
-        private TrackState State;
-        private readonly Func<T> factory;
+        private T _item;
+        private TrackState _state;
+        private readonly Func<T> _factory;
 
         protected abstract void AddInternal(T item);
         protected abstract T TryGetInternal();
@@ -16,19 +16,25 @@ namespace TrustEDU.Core.Base.Caching
 
         protected MetaDataCache(Func<T> factory)
         {
-            this.factory = factory;
+            this._factory = factory;
         }
 
         public void Commit()
         {
-            switch (State)
+            switch (_state)
             {
                 case TrackState.Added:
-                    AddInternal(Item);
+                    AddInternal(_item);
                     break;
                 case TrackState.Changed:
-                    UpdateInternal(Item);
+                    UpdateInternal(_item);
                     break;
+                case TrackState.None:
+                    break;
+                case TrackState.Deleted:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -36,23 +42,22 @@ namespace TrustEDU.Core.Base.Caching
 
         public T Get()
         {
-            if (Item == null)
+            if (_item == null)
             {
-                Item = TryGetInternal();
+                _item = TryGetInternal();
             }
-            if (Item == null)
-            {
-                Item = factory?.Invoke() ?? new T();
-                State = TrackState.Added;
-            }
-            return Item;
+            if (_item != null) return _item;
+
+            _item = _factory?.Invoke() ?? new T();
+            _state = TrackState.Added;
+            return _item;
         }
 
         public T GetAndChange()
         {
-            T item = Get();
-            if (State == TrackState.None)
-                State = TrackState.Changed;
+            var item = Get();
+            if (_state == TrackState.None)
+                _state = TrackState.Changed;
             return item;
         }
     }
